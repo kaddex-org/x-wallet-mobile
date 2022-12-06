@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="196.34" height="196.34" viewBox="0 0 196.34 196.34">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.4" y1="0.05" x2="0.589" y2="0.899" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#0f0d27"/>
+      <stop offset="0.182" stop-color="#1d2050"/>
+      <stop offset="0.409" stop-color="#2a3767"/>
+      <stop offset="0.665" stop-color="#1b1f4d"/>
+      <stop offset="1" stop-color="#101230"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" y1="0.5" x2="1" y2="0.5" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#02ffff"/>
+      <stop offset="0.999" stop-color="#00abff"/>
+    </linearGradient>
+  </defs>
+  <g id="Group_77123" data-name="Group 77123" transform="translate(1705.862 1251.718)">
+    <circle id="Ellipse_5970" data-name="Ellipse 5970" cx="98.17" cy="98.17" r="98.17" transform="translate(-1705.862 -1251.718)" fill="url(#linear-gradient)"/>
+    <g id="Layer_2" data-name="Layer 2" transform="translate(-1698.944 -1244.8)">
+      <g id="Layer_1-2" data-name="Layer 1-2" transform="translate(0)">
+        <g id="Page-1">
+          <g id="wbtc_colour" data-name="wbtc colour">
+            <path id="Shape" d="M-1308.479-1162.584l-5.847,5.847a82.773,82.773,0,0,1,0,111.715l5.847,5.847a91.135,91.135,0,0,0,0-123.545Z" transform="translate(1466.894 1192.055)" fill="url(#linear-gradient-2)"/>
+            <path id="Shape-2" d="M-1610.547-1204.759a82.773,82.773,0,0,1,111.715,0l5.847-5.847a91.134,91.134,0,0,0-123.546,0Z" transform="translate(1646 1234.736)" fill="url(#linear-gradient-2)"/>
+            <path id="Shape-3" d="M-1658.9-1044.6a82.773,82.773,0,0,1,0-111.657l-5.847-5.847a91.133,91.133,0,0,0,0,123.545Z" transform="translate(1688.879 1191.686)" fill="url(#linear-gradient-2)"/>
+            <path id="Shape-4" d="M-1498.825-860.374a82.773,82.773,0,0,1-111.715,0l-5.847,5.847a91.134,91.134,0,0,0,123.546,0Z" transform="translate(1645.916 1012.863)" fill="url(#linear-gradient-2)"/>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="Group_77084" data-name="Group 77084" transform="translate(-1647.354 -1209.376)">
+      <g id="Rectangle_11" data-name="Rectangle 11" transform="translate(0 0.022)">
+        <rect id="Rectangle_13106" data-name="Rectangle 13106" width="1.41" height="10.43" fill="#fff"/>
+      </g>
+      <g id="Path_898" data-name="Path 898" transform="translate(2.256)">
+        <path id="Path_72768" data-name="Path 72768" d="M-1548.246-1147.769h-1.91l-4.706,4.543h-1.824v1.459h1.914l4.617,4.454h1.91l-5.294-5.111v-.236Z" transform="translate(1556.686 1147.769)" fill="#fff"/>
+      </g>
+    </g>
+    <path id="Shape-5" d="M-1489.291-1113.428c-1.169-12.2-11.694-16.293-25.005-17.541v-16.8h-10.291v16.488h-8.224v-16.488h-10.213v16.917H-1563.9v11.011s7.6-.137,7.484,0a5.321,5.321,0,0,1,5.847,4.522v46.307a3.605,3.605,0,0,1-1.247,2.514,3.565,3.565,0,0,1-2.651.9c.136.117-7.484,0-7.484,0l-1.949,12.3h20.679v17.19h10.291v-16.937h8.224v16.859h10.31v-17c17.385-1.053,29.507-5.34,31.028-21.614,1.228-13.1-4.931-18.944-14.774-21.3C-1492.156-1099.045-1488.453-1104.5-1489.291-1113.428Zm-14.422,36.6c0,12.785-21.906,11.324-28.884,11.324v-22.686C-1525.62-1088.169-1503.713-1090.177-1503.713-1076.826Zm-4.775-31.963c0,11.694-18.281,10.271-24.089,10.271v-20.62C-1526.77-1119.138-1508.489-1120.971-1508.489-1108.789Z" transform="translate(-84.137 -61.607)" fill="#ffa900"/>
+  </g>
+</svg>

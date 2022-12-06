@@ -1,0 +1,30 @@
+<svg width="213" height="168" viewBox="0 0 213 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="105" cy="84" r="82" stroke="url(#paint0_angular_4_1347)" stroke-width="4"/>
+    <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M120.361 86.75H80.25V81.25H120.361L103.055 63.9445L106.945 60.0554L130.889 84L106.945 107.945L103.055 104.055L120.361 86.75Z"
+          fill="#FFA900"/>
+    <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M195.361 86.75H155.25V81.25H195.361L178.055 63.9445L181.945 60.0554L205.889 84L181.945 107.945L178.055 104.055L195.361 86.75Z"
+          fill="url(#paint1_linear_4_1347)"/>
+    <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M48.3609 86.75H8.25V81.25H48.3609L31.0555 63.9445L34.9445 60.0554L58.8891 84L34.9445 107.945L31.0555 104.055L48.3609 86.75Z"
+          fill="url(#paint2_linear_4_1347)"/>
+    <defs>
+        <radialGradient id="paint0_angular_4_1347" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                        gradientTransform="translate(105 84) rotate(90) scale(84)">
+            <stop stop-color="#FFA900"/>
+            <stop offset="0.463542" stop-color="#7EFBFA"/>
+            <stop offset="1" stop-color="#FA41A5" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="paint1_linear_4_1347" x1="134" y1="83.9998" x2="181" y2="83.9998"
+                        gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFA900"/>
+            <stop offset="1" stop-color="#FFA900" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="paint2_linear_4_1347" x1="66.5" y1="83.9998" x2="34" y2="83.9998"
+                        gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFA900"/>
+            <stop offset="1" stop-color="#FFA900" stop-opacity="0"/>
+        </linearGradient>
+    </defs>
+</svg>
