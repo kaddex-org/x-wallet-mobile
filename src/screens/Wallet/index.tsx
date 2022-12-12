@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {RefreshControl, ScrollView, View} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -32,6 +32,10 @@ import {
 } from '../../store/userWallet';
 import {useDebounce} from '../../utils/hooksHelpers';
 import {useShallowEqualSelector} from '../../store/utils';
+import Confirm2FaModal from '../../modals/Confirm2FaModal';
+import api from '../../api';
+import {makeSelectGeneratedPhrases} from '../../store/auth/selectors';
+import {setIs2FaAdded} from '../../store/auth';
 
 const Wallet = () => {
   const dispatch = useDispatch();
@@ -47,6 +51,10 @@ const Wallet = () => {
     makeSelectActiveNetworkDetails,
   );
   const selectedAccount = useShallowEqualSelector(makeSelectSelectedAccount);
+
+  const seeds = useShallowEqualSelector(makeSelectGeneratedPhrases);
+  const [isConfirm2FaModalVisible, setConfirm2FaModalVisible] = useState(false);
+  const verify2FAAsked = useRef<boolean>(false);
 
   useEffect(() => {
     if (!walletInitialized) {
@@ -109,25 +117,50 @@ const Wallet = () => {
     }
   }, [walletInitialized, accountsList, selectedAccount?.accountName]);
 
+  useEffect(() => {
+    if (seeds && !verify2FAAsked.current) {
+      verify2FAAsked.current = true;
+      api
+        .post('/api/2fa/check', {
+          secretRecovery: seeds || '',
+        })
+        .then(response2FA => {
+          if (response2FA?.data?.is2FaAdded) {
+            dispatch(setIs2FaAdded(true));
+            setConfirm2FaModalVisible(true);
+          } else {
+            dispatch(setIs2FaAdded(false));
+          }
+        });
+    }
+  }, [seeds]);
+
   return (
-    <View style={styles.container}>
-      <Header />
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={isNetworkLoading || isBalanceLoading}
-            onRefresh={onRefresh}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-        style={styles.scroll}
-        contentContainerStyle={styles.content}>
-        <TopHeader>
-          <WalletBalance />
-        </TopHeader>
-        <AssetsList />
-      </ScrollView>
-    </View>
+    <>
+      <View style={styles.container}>
+        <Header />
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={isNetworkLoading || isBalanceLoading}
+              onRefresh={onRefresh}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+          style={styles.scroll}
+          contentContainerStyle={styles.content}>
+          <TopHeader>
+            <WalletBalance />
+          </TopHeader>
+          <AssetsList />
+        </ScrollView>
+      </View>
+      <Confirm2FaModal
+        seeds={seeds}
+        isVisible={isConfirm2FaModalVisible}
+        setVisible={setConfirm2FaModalVisible}
+      />
+    </>
   );
 };
 

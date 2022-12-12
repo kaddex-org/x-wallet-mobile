@@ -13,8 +13,6 @@ import {
 import Toast from 'react-native-toast-message';
 import {useDispatch, useSelector} from 'react-redux';
 import ListItem from './components/ListItem';
-import {makeSelectSelectedAccount} from '../../store/userWallet/selectors';
-import {useShallowEqualSelector} from '../../store/utils';
 import {setIs2FaAdded} from '../../store/auth';
 import {
   makeSelectGeneratedPhrases,
@@ -36,7 +34,6 @@ const Add2FA = () => {
 
   const seeds = useSelector(makeSelectGeneratedPhrases);
   const is2FaAdded = useSelector(makeSelectIs2FaAdded);
-  const account = useShallowEqualSelector(makeSelectSelectedAccount);
 
   const [isVerifying, setVerifying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

@@ -79,6 +79,12 @@ const AddToken = () => {
                 }),
               );
               navigation.goBack();
+              if (route?.params?.onTokenAdd) {
+                route?.params?.onTokenAdd(
+                  formValues.tokenName,
+                  formValues.tokenAddress,
+                );
+              }
               setTimeout(() => {
                 dispatch(
                   getBalances({

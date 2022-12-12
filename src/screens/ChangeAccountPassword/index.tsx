@@ -24,7 +24,8 @@ import api from '../../api';
 import queryString from 'query-string';
 import {setPassword} from '../../store/auth';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
+import {makeSelectHashPassword} from '../../store/auth/selectors';
 
 const fields: TFields[] = [
   {
@@ -56,35 +57,64 @@ const ChangeAccountPassword = () => {
     navigation.goBack();
   }, [navigation]);
 
+  const hash = useSelector(makeSelectHashPassword);
+
   const handlePressChange = useCallback(
     (data: TChangeAccountPasswordForm) => {
       api
         .get(
-          `/api/hash-password?${queryString.stringify({
-            password: data.newPassword || '',
+          `/api/compare-password?${queryString.stringify({
+            password: data.currentPassword || '',
+            hash,
           })}`,
         )
-        .then(hashResponse => {
-          if (hashResponse.data.hash) {
-            dispatch(setPassword(hashResponse.data.hash));
-            Toast.show({
-              type: 'success',
-              position: 'top',
-              visibilityTime: 3000,
-              autoHide: true,
-              text1: 'Password has been successfully changed !',
-              topOffset: statusBarHeight + 16,
-            });
-            handlePressBack();
+        .then(compareResponse => {
+          if (compareResponse.data) {
+            api
+              .get(
+                `/api/hash-password?${queryString.stringify({
+                  password: data.newPassword || '',
+                })}`,
+              )
+              .then(hashResponse => {
+                if (hashResponse.data.hash) {
+                  dispatch(setPassword(hashResponse.data.hash));
+                  Toast.show({
+                    type: 'success',
+                    position: 'top',
+                    visibilityTime: 3000,
+                    autoHide: true,
+                    text1: 'Password has been successfully changed !',
+                    topOffset: statusBarHeight + 16,
+                  });
+                  handlePressBack();
+                } else {
+                  ReactNativeHapticFeedback.trigger('impactMedium', {
+                    enableVibrateFallback: false,
+                    ignoreAndroidSystemSettings: false,
+                  });
+                  Alert.alert(
+                    'Failed to change password',
+                    'Something went wrong. Please try again later.',
+                  );
+                }
+              })
+              .catch(() => {
+                ReactNativeHapticFeedback.trigger('impactMedium', {
+                  enableVibrateFallback: false,
+                  ignoreAndroidSystemSettings: false,
+                });
+                Alert.alert(
+                  'Failed to change password',
+                  'Something went wrong. Please try again later.',
+                );
+              });
           } else {
             ReactNativeHapticFeedback.trigger('impactMedium', {
               enableVibrateFallback: false,
               ignoreAndroidSystemSettings: false,
             });
-            Alert.alert(
-              'Failed to change password',
-              'Something went wrong. Please try again later.',
-            );
+            Alert.alert('Failed to verify', 'Invalid password');
           }
         })
         .catch(() => {
@@ -93,12 +123,12 @@ const ChangeAccountPassword = () => {
             ignoreAndroidSystemSettings: false,
           });
           Alert.alert(
-            'Failed to change password',
+            'Failed to verify',
             'Something went wrong. Please try again later.',
           );
         });
     },
-    [handlePressBack],
+    [handlePressBack, hash],
   );
 
   return (

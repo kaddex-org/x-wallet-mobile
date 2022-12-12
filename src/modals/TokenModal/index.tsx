@@ -86,13 +86,13 @@ const TokenModal: FC<TTokenModalProps> = React.memo(
             text: 'Remove',
             style: 'destructive',
             onPress: () => {
+              dispatch(deleteSelectedToken(selectedToken));
               toggle();
-              dispatch(deleteSelectedToken());
             },
           },
         ],
       );
-    }, [toggle]);
+    }, [toggle, selectedToken]);
 
     if (!selectedToken) {
       return null;

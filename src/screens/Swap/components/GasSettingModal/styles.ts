@@ -16,6 +16,7 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   gasStation: {
+    color: MAIN_COLOR,
     fontFamily: MEDIUM_MONTSERRAT,
     fontSize: 14,
     fontWeight: '600',

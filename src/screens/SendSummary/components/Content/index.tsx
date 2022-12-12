@@ -27,7 +27,7 @@ const Content = React.memo(() => {
           </Text>
           <Text style={[styles.text, styles.usd]}>{'Gas'}</Text>
         </View>
-        <Text style={[styles.text, styles.leftText]}>{speed} Speed</Text>
+        <Text style={[styles.text, styles.leftText]}>{`${speed} Speed`}</Text>
       </View>
     </TouchableOpacity>
   );

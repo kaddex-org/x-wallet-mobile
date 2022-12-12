@@ -74,7 +74,10 @@ export type TRootStackParamList = {
   [ERootStackRoutes.Contacts]: undefined;
   [ERootStackRoutes.AddEditContact]: {isCreate?: boolean};
   [ERootStackRoutes.AddEditNetwork]: {isCreate?: boolean};
-  [ERootStackRoutes.AddToken]: {tokenName?: string};
+  [ERootStackRoutes.AddToken]: {
+    tokenName?: string;
+    onTokenAdd?: (tokenName: string, tokenAddress: string) => void;
+  };
   [ERootStackRoutes.ImportAccount]: undefined;
   [ERootStackRoutes.RecoverAccount]: undefined;
   [ERootStackRoutes.ExportRecoveryPhraseAuth]: undefined;

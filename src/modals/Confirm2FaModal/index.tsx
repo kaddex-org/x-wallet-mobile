@@ -12,6 +12,8 @@ import api from '../../api';
 import {ERootStackRoutes, TNavigationProp} from '../../routes/types';
 import {styles} from './styles';
 import Input from '../../components/Input';
+import {logout} from '../../store/auth/actions';
+import {useDispatch} from 'react-redux';
 
 export type TConfirmModalProps = {
   isVisible: boolean;
@@ -27,6 +29,8 @@ const Confirm2FaModal: FC<TConfirmModalProps> = ({
   const navigation =
     useNavigation<TNavigationProp<ERootStackRoutes.RecoveryFromSeeds>>();
 
+  const dispatch = useDispatch();
+
   const [verifying, setVerifying] = useState(false);
   const [code, setCode] = useState('');
 
@@ -37,14 +41,9 @@ const Confirm2FaModal: FC<TConfirmModalProps> = ({
         secret: code,
         secretRecovery: seeds,
       });
-
       setVerifying(false);
       switch (data.status) {
         case 'success':
-          navigation.navigate({
-            name: ERootStackRoutes.SignIn,
-            params: undefined,
-          });
           setVisible(false);
           return;
         case 'code is incorrect':
@@ -58,8 +57,10 @@ const Confirm2FaModal: FC<TConfirmModalProps> = ({
 
   const close = useCallback(() => {
     setVisible(false);
-    navigation.navigate({name: ERootStackRoutes.Welcome, params: undefined});
-  }, [navigation]);
+    setTimeout(() => {
+      dispatch(logout());
+    }, 600);
+  }, []);
 
   return (
     <Modal

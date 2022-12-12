@@ -1,6 +1,13 @@
 import React, {useCallback, useRef} from 'react';
-import {ScrollView, View, Text, TouchableOpacity, Platform} from 'react-native';
-import {useForm, Controller} from 'react-hook-form';
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  Alert,
+} from 'react-native';
+import {useForm, Controller, FieldValues} from 'react-hook-form';
 
 import Header from './components/Header';
 import SecurityUnlockSvg from '../../assets/images/security-unlock.svg';
@@ -12,6 +19,11 @@ import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {useScrollBottomOnKeyboard} from '../../utils/keyboardHelpers';
 import {bottomSpace} from '../../utils/deviceHelpers';
 import {useNavigation} from '@react-navigation/native';
+import {useSelector} from 'react-redux';
+import {makeSelectHashPassword} from '../../store/auth/selectors';
+import api from '../../api';
+import queryString from 'query-string';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const ExportRecoveryPhraseAuth = () => {
   const navigation =
@@ -25,9 +37,44 @@ const ExportRecoveryPhraseAuth = () => {
     resolver: exportRecoveryPhraseSchema,
   });
 
-  const handlePressContinue = useCallback(() => {
-    navigation.replace(ERootStackRoutes.ExportRecoveryPhrase, {} as any);
-  }, [navigation]);
+  const hash = useSelector(makeSelectHashPassword);
+
+  const handlePressContinue = useCallback(
+    (data: FieldValues) => {
+      api
+        .get(
+          `/api/compare-password?${queryString.stringify({
+            password: data.password || '',
+            hash,
+          })}`,
+        )
+        .then(compareResponse => {
+          if (compareResponse.data) {
+            navigation.replace(
+              ERootStackRoutes.ExportRecoveryPhrase,
+              {} as any,
+            );
+          } else {
+            ReactNativeHapticFeedback.trigger('impactMedium', {
+              enableVibrateFallback: false,
+              ignoreAndroidSystemSettings: false,
+            });
+            Alert.alert('Failed to verify', 'Invalid password');
+          }
+        })
+        .catch(() => {
+          ReactNativeHapticFeedback.trigger('impactMedium', {
+            enableVibrateFallback: false,
+            ignoreAndroidSystemSettings: false,
+          });
+          Alert.alert(
+            'Failed to verify',
+            'Something went wrong. Please try again later.',
+          );
+        });
+    },
+    [navigation, hash],
+  );
 
   const scrollRef = useRef<ScrollView | null>(null);
   useScrollBottomOnKeyboard(scrollRef);

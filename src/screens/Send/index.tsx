@@ -22,7 +22,7 @@ import {
 } from '../../routes/types';
 
 import {styles} from './styles';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   setEstimatedGasFee,
   setGatheredTransferInfo,
@@ -35,12 +35,17 @@ import Content from './components/Content';
 import {useShallowEqualSelector} from '../../store/utils';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {makeSelectSelectedToken} from '../../store/userWallet/selectors';
+import {makeSelectIsTransferring} from '../../store/transfer/selectors';
+import Toast from 'react-native-toast-message';
+import {statusBarHeight} from '../../utils/deviceHelpers';
 
 const Send = () => {
   const navigation = useNavigation<TNavigationProp<ERootStackRoutes.Send>>();
   const route = useRoute<TNavigationRouteProp<ERootStackRoutes.Send>>();
 
   const dispatch = useDispatch();
+
+  const isCurrentlyTransferring = useSelector(makeSelectIsTransferring);
 
   const [sourceChainId, setSourceChainId] = useState<string | null>(
     route?.params?.sourceChainId || '0',
@@ -51,33 +56,46 @@ const Send = () => {
   const [accountName, setAccountName] = useState<string>('');
 
   const handlePressContinue = useCallback(() => {
-    dispatch(
-      setGatheredTransferInfo({
-        chainId: sourceChainId,
-        destinationAccount: {
-          accountName,
-          chainId: targetChainId,
-          publicKey: accountPublicKey,
-        },
-        predicate,
-      }),
-    );
-    dispatch(
-      setEstimatedGasFee({
-        speed: 'normal',
-        gasPrice: GAS_PRICE,
-        gasLimit: GAS_LIMIT,
-      }),
-    );
-    setTimeout(
-      () =>
-        navigation.navigate({
-          name: ERootStackRoutes.SendSummary,
-          params: undefined,
+    if (isCurrentlyTransferring) {
+      Toast.show({
+        type: 'info',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        text1: 'Transfer is pending!',
+        text2: 'Please try again once transfer is finished',
+        topOffset: statusBarHeight + 16,
+      });
+    } else {
+      dispatch(
+        setGatheredTransferInfo({
+          chainId: sourceChainId,
+          destinationAccount: {
+            accountName,
+            chainId: targetChainId,
+            publicKey: accountPublicKey,
+          },
+          predicate,
         }),
-      150,
-    );
+      );
+      dispatch(
+        setEstimatedGasFee({
+          speed: 'normal',
+          gasPrice: GAS_PRICE,
+          gasLimit: GAS_LIMIT,
+        }),
+      );
+      setTimeout(
+        () =>
+          navigation.navigate({
+            name: ERootStackRoutes.SendSummary,
+            params: undefined,
+          }),
+        150,
+      );
+    }
   }, [
+    isCurrentlyTransferring,
     navigation,
     sourceChainId,
     accountName,

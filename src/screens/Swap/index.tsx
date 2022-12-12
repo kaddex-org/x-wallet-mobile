@@ -6,12 +6,8 @@ import {styles} from './styles';
 import GasSettingSvg from '../../assets/images/gas_station.svg';
 import BasicSettingSvg from '../../assets/images/basic-settins.svg';
 import GasSettingModal from './components/GasSettingModal';
-import Header from './components/Header';
-import {headerTabs} from './const';
 
 const Swap = () => {
-  const [activeTab, setActiveTab] = useState(headerTabs[0].value);
-
   const [isGasSettingModalVisible, setGasSettingModalVisible] = useState(false);
   const [isSettingModal, setSettingModal] = useState(false);
 
@@ -29,7 +25,6 @@ const Swap = () => {
       activeOpacity={1}
       onPress={Keyboard.dismiss}
       accessible={false}>
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}

@@ -94,9 +94,17 @@ export const PactProvider: FC = ({children}) => {
       if (res.data.length !== 0) {
         setPairReserve({
           token0:
-            typeof res.data[0] !== 'string' ? res.data[0].decimal : res.data[0],
+            typeof res.data[0] === 'number'
+              ? res.data[0]
+              : typeof res.data[0] !== 'string'
+              ? res.data[0].decimal
+              : res.data[0],
           token1:
-            typeof res.data[1] !== 'string' ? res.data[1].decimal : res.data[1],
+            typeof res.data[1] === 'number'
+              ? res.data[1]
+              : typeof res.data[1] !== 'string'
+              ? res.data[1].decimal
+              : res.data[1],
         });
       } else {
         setPairReserve({
@@ -157,8 +165,7 @@ export const PactProvider: FC = ({children}) => {
       const reserveIn = Number(pairReserve.token0);
       const midPrice = reserveOut / reserveIn;
       const exactQuote = Number(amountIn) * midPrice;
-      const slippage = (exactQuote - Number(amountOut)) / exactQuote;
-      return slippage;
+      return (exactQuote - Number(amountOut)) / exactQuote;
     },
     [pairReserve],
   );

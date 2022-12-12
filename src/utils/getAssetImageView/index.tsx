@@ -64,6 +64,7 @@ export const getAssetImageView = (tokenAddress: string, size = 40) => {
         </View>
       );
     case 'runonflux.flux':
+    case 'kdlaunch.runonflux.flux':
       return (
         <Image
           source={require('../../assets/images/flux-icon.png')}

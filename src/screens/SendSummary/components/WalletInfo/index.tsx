@@ -14,6 +14,8 @@ import {
 import {useInputBlurOnKeyboard} from '../../../../utils/keyboardHelpers';
 import Snackbar from 'react-native-snackbar';
 import {useShallowEqualSelector} from '../../../../store/utils';
+import {toFixed} from '../../../../utils/numberHelpers';
+import {decimalIfNeeded} from '../../../../utils/stringHelpers';
 
 const WalletInfo = () => {
   const dispatch = useDispatch();
@@ -72,23 +74,19 @@ const WalletInfo = () => {
   const onInputBlur = useCallback(() => {
     try {
       if (inputText) {
-        const formattedInputText = inputText.replace(',', '.');
-        const textBeforeDecimals = formattedInputText.split('.')[0];
-        const textAfterDecimals = formattedInputText.split('.')[1];
-        if (textAfterDecimals.length > 6) {
-          const fixedInputText = `${textBeforeDecimals}.${textAfterDecimals.slice(
-            0,
-            6,
-          )}`;
-          setInputText(fixedInputText);
+        const amount = Number(toFixed(inputText.replace(',', '.'), 6));
+        if (isNaN(amount)) {
+          setInputText('');
         } else {
-          const amount = inputText.replace(',', '.');
           if (amount <= balance) {
+            setInputText(`${amount}`);
             dispatch(setGatheredTransferInfo({amount}));
           } else {
             setInputText(`${balance}`);
           }
         }
+      } else {
+        setInputText('');
       }
     } catch (e) {
       setInputText(`${balance}`);
@@ -103,32 +101,33 @@ const WalletInfo = () => {
   useInputBlurOnKeyboard(inputRef);
 
   const onHalf = useCallback(() => {
-    handleChangeText(`${balance / 2}`.replace(',', '.'));
-    dispatch(setGatheredTransferInfo({amount: +(balance / 2)}));
+    const amount = decimalIfNeeded(
+      toFixed(`${balance / 2}`.replace(',', '.'), 6),
+    );
+    setInputText(`${amount}`);
+    dispatch(setGatheredTransferInfo({amount}));
   }, [balance]);
 
   const onMax = useCallback(() => {
-    handleChangeText(
-      (
-        +balance -
-        (estimatedGasFee?.gasPrice || 0) *
-          (estimatedGasFee?.gasLimit || 0) *
-          (kdaUsdEquivalent && gasUsdEquivalent
-            ? kdaUsdEquivalent / gasUsdEquivalent
-            : 1)
-      )
-        .toFixed(6)
-        .replace(',', '.'),
-    );
-    dispatch(
-      setGatheredTransferInfo({
-        amount:
+    const amount = decimalIfNeeded(
+      toFixed(
+        (
           +balance -
           (estimatedGasFee?.gasPrice || 0) *
             (estimatedGasFee?.gasLimit || 0) *
             (kdaUsdEquivalent && gasUsdEquivalent
               ? kdaUsdEquivalent / gasUsdEquivalent
-              : 1),
+              : 1)
+        )
+          .toString()
+          .replace(',', '.'),
+        6,
+      ),
+    );
+    setInputText(`${amount}`);
+    dispatch(
+      setGatheredTransferInfo({
+        amount,
       }),
     );
     Snackbar.show({
@@ -167,6 +166,7 @@ const WalletInfo = () => {
           placeholder="0"
           style={[styles.mainText, styles.input]}
           value={inputText.toString()}
+          blurOnSubmit={true}
           onEndEditing={onInputBlur}
           onSubmitEditing={onInputBlur}
           onBlur={onInputBlur}

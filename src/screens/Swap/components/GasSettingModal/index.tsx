@@ -4,13 +4,14 @@ import {styles} from './styles';
 import Modal from '../../../../components/Modal';
 import Input from '../../../../components/Input';
 import RadioButtons from './RadioButtons';
-import {commonColors} from '../../../../constants/styles';
+import {commonColors, MAIN_COLOR} from '../../../../constants/styles';
 import {usePactContext} from '../../../../contexts';
 import {GAS_OPTIONS} from '../../../../constants';
 import {getDecimalPlaces} from '../../../../utils/numberHelpers';
 import {TGasSettingModalProps, TSpeed} from './types';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {bottomSpace} from '../../../../utils/deviceHelpers';
+import ToggleSwitch from 'toggle-switch-react-native';
 
 const speedValues: TSpeed[] = ['low', 'normal', 'fast'];
 
@@ -52,6 +53,9 @@ const GasSettingModal: FC<TGasSettingModalProps> = ({isVisible, toggle}) => {
       : pact.setGasConfiguration(GAS_OPTIONS[type].SWAP);
   };
 
+  const toggleSwitch = () =>
+    pact.setEnableGasStation(previousState => !previousState);
+
   const color = useMemo(() => {
     return pact.gasConfiguration?.gasPrice * pact.gasConfiguration?.gasLimit >
       0.5
@@ -66,6 +70,14 @@ const GasSettingModal: FC<TGasSettingModalProps> = ({isVisible, toggle}) => {
   return (
     <Modal isVisible={isVisible} close={toggle} title="Gas Settings">
       <View style={styles.modalContainer}>
+        <View style={styles.header}>
+          <Text style={styles.gasStation}>GAS STATION</Text>
+          <ToggleSwitch
+            isOn={pact.enableGasStation}
+            onColor={MAIN_COLOR}
+            onToggle={toggleSwitch}
+          />
+        </View>
         {!pact.enableGasStation ? (
           <>
             <Input
@@ -110,7 +122,11 @@ const GasSettingModal: FC<TGasSettingModalProps> = ({isVisible, toggle}) => {
               </Text>
             </View>
           </>
-        ) : null}
+        ) : (
+          <Text style={styles.title}>
+            No gas cost - subsidized by Kaddex through Kadena gas stations.
+          </Text>
+        )}
         {Platform.OS === 'ios' && <KeyboardSpacer topSpacing={-bottomSpace} />}
       </View>
     </Modal>

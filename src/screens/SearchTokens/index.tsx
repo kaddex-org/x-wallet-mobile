@@ -14,10 +14,14 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {makeSelectActiveNetworkDetails} from '../../store/networks/selectors';
 import {useShallowEqualSelector} from '../../store/utils';
 import {useNavigation} from '@react-navigation/native';
+import {setSelectedToken} from '../../store/userWallet';
+import {useDispatch} from 'react-redux';
 
 const SearchTokens = () => {
   const navigation =
     useNavigation<TNavigationProp<ERootStackRoutes.SearchTokens>>();
+
+  const dispatch = useDispatch();
 
   const networkDetail = useShallowEqualSelector(makeSelectActiveNetworkDetails);
   const tokensList = useShallowEqualSelector(makeSelectSearchTokenList);
@@ -48,6 +52,7 @@ const SearchTokens = () => {
           )
           .then(response => {
             if (response.data === true) {
+              dispatch(setSelectedToken(null));
               navigation.replace(ERootStackRoutes.AddToken, {
                 tokenName: item,
               } as any);
@@ -78,7 +83,7 @@ const SearchTokens = () => {
   );
 
   const renderItem = useCallback(
-    ({item, index}: any) => (
+    ({item}: any) => (
       <Item
         key={item}
         item={item}

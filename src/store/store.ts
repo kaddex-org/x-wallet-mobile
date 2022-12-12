@@ -91,7 +91,7 @@ const networkPersistConfig = {
 const transferPersistConfig = {
   key: 'transfers',
   storage: MMKVStorage(plainStorage),
-  blacklist: ['showTransferBubble'],
+  blacklist: ['showTransferBubble', 'isSwapping', 'transferResult'],
 };
 
 const rootReducer = combineReducers({

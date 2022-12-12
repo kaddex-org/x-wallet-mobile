@@ -92,22 +92,21 @@ const userWallet = createSlice({
       }
     },
 
-    deleteSelectedToken: state => {
-      if (state.accounts && state.selectedToken) {
-        const accountIndex = state.accounts.findIndex(
-          item => item?.accountName === state.selectedAccount?.accountName,
-        );
-        if (accountIndex > -1) {
+    deleteSelectedToken: (state, {payload}) => {
+      if (state.accounts && payload) {
+        for (
+          let accountIndex = 0;
+          accountIndex < (state.accounts || []).length;
+          accountIndex++
+        ) {
           state.accounts[accountIndex].wallets = state.accounts[
             accountIndex
-          ].wallets.filter(
-            item => item.tokenAddress !== state.selectedToken?.tokenAddress,
-          );
+          ].wallets.filter(item => item.tokenAddress !== payload?.tokenAddress);
         }
       }
       if (state.selectedAccount) {
         state.selectedAccount.wallets = state.selectedAccount.wallets.filter(
-          item => item.tokenAddress !== state.selectedToken?.tokenAddress,
+          item => item.tokenAddress !== payload?.tokenAddress,
         );
       }
     },

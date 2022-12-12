@@ -32,6 +32,11 @@ export const makeSelectEstimatedGasFee = createSelector(
   state => state.estimatedGasFee,
 );
 
+export const makeSelectIsTransferring = createSelector(
+  selectedState,
+  state => state.transferResult?.status === 'pending',
+);
+
 export const makeSelectIsSwapping = createSelector(
   selectedState,
   state => state.isSwapping,

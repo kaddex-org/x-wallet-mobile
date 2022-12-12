@@ -7,7 +7,7 @@ import ArrowTopBottomRightSvg from '../../../../assets/images/arrow-top-right.sv
 
 import {styles} from './styles';
 import {cutStr, numberWithCommas} from '../../../../utils/stringHelpers';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {makeSelectSelectedAccount} from '../../../../store/userWallet/selectors';
 import {finishTransfer} from '../../../../store/transfer/actions';
 import {makeSelectActiveNetworkDetails} from '../../../../store/networks/selectors';
@@ -18,6 +18,9 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {ERootStackRoutes, TNavigationProp} from '../../../../routes/types';
 import {useShallowEqualSelector} from '../../../../store/utils';
+import Toast from 'react-native-toast-message';
+import {statusBarHeight} from '../../../../utils/deviceHelpers';
+import {makeSelectIsTransferring} from '../../../../store/transfer/selectors';
 
 const ListItem: FC<TListItemProps> = React.memo(
   ({item: activityItem, onPress}) => {
@@ -41,6 +44,7 @@ const ListItem: FC<TListItemProps> = React.memo(
 
     const dispatch = useDispatch();
 
+    const isCurrentlyTransferring = useSelector(makeSelectIsTransferring);
     const selectedAccount = useShallowEqualSelector(makeSelectSelectedAccount);
     const networkDetails = useShallowEqualSelector(
       makeSelectActiveNetworkDetails,
@@ -56,28 +60,40 @@ const ListItem: FC<TListItemProps> = React.memo(
 
     const onFinishTransfer = useCallback(() => {
       if (networkDetails) {
-        dispatch(setTransferResult({}));
-        dispatch(
-          setGatheredTransferInfo({
-            amount: Number(amount),
-          }),
-        );
-        dispatch(
-          finishTransfer({
-            networkDetail: networkDetails,
-            activity: activityItem,
-          }),
-        );
-        setTimeout(
-          () =>
-            navigation.navigate({
-              name: ERootStackRoutes.SendProgress,
-              params: undefined,
+        if (isCurrentlyTransferring) {
+          Toast.show({
+            type: 'info',
+            position: 'top',
+            visibilityTime: 4000,
+            autoHide: true,
+            text1: 'Transfer is pending!',
+            text2: 'Please try again once transfer is finished',
+            topOffset: statusBarHeight + 16,
+          });
+        } else {
+          dispatch(setTransferResult({}));
+          dispatch(
+            setGatheredTransferInfo({
+              amount: Number(amount),
             }),
-          150,
-        );
+          );
+          dispatch(
+            finishTransfer({
+              networkDetail: networkDetails,
+              activity: activityItem,
+            }),
+          );
+          setTimeout(
+            () =>
+              navigation.navigate({
+                name: ERootStackRoutes.SendProgress,
+                params: undefined,
+              }),
+            150,
+          );
+        }
       }
-    }, [networkDetails, activityItem, navigation]);
+    }, [isCurrentlyTransferring, networkDetails, activityItem, navigation]);
 
     const amountText = useMemo(
       () =>

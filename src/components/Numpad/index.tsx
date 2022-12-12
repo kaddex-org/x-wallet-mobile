@@ -146,7 +146,7 @@ const Numpad: FC<TNumpadProps> = ({isReset}) => {
       animateBounce();
     }
     setPinCode('');
-  }, [pinCode, auth, animateBounce, storedPinCode, generatePinCode]);
+  }, [pinCode, auth, isReset, animateBounce, storedPinCode, generatePinCode]);
 
   useEffect(() => {
     handleAvailableSensor();
@@ -189,7 +189,7 @@ const Numpad: FC<TNumpadProps> = ({isReset}) => {
             key={num}
             style={[
               styles.smallCircle,
-              {backgroundColor: pinCodeLength >= num ? 'white' : undefined},
+              pinCodeLength >= num && styles.smallCircleWhite,
             ]}
           />
         ))}

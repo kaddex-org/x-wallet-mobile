@@ -32,7 +32,11 @@ const Login = () => {
       !isReset && storedPinCode
         ? 'Unlock X-Wallet'
         : newPinCode
-        ? 'Re-enter your passcode'
+        ? isReset
+          ? 'Re-enter new passcode'
+          : 'Re-enter your passcode'
+        : isReset
+        ? 'Enter new passcode'
         : 'Enter your passcode',
     [isReset, storedPinCode, newPinCode],
   );

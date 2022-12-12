@@ -87,7 +87,7 @@ const WalletBalance = React.memo(() => {
             sourceChainId: '0',
           },
         }),
-      150,
+      300,
     );
   }, [kdaWallet, navigation]);
 

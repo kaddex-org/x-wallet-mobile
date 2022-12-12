@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {Keyboard, ScrollView, TouchableOpacity, View} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -25,6 +25,7 @@ import {
 import {setTransferResult} from '../../store/transfer';
 import {useShallowEqualSelector} from '../../store/utils';
 import {useNavigation} from '@react-navigation/native';
+import ConfirmModal from './components/ConfirmModal';
 
 const SendSummary = () => {
   const navigation =
@@ -39,7 +40,11 @@ const SendSummary = () => {
   const sourceAccount = useShallowEqualSelector(makeSelectSelectedAccount);
   const sourceToken = useShallowEqualSelector(makeSelectSelectedToken);
 
-  const handlePressSend = useCallback(() => {
+  const [showConfirmationModal, setShowConfirmationModal] =
+    useState<boolean>(false);
+
+  const onConfirm = useCallback(() => {
+    setShowConfirmationModal(false);
     if (networkDetail && sourceAccount) {
       dispatch(
         makeTransfer({
@@ -69,44 +74,55 @@ const SendSummary = () => {
     navigation,
   ]);
 
+  const handlePressSend = useCallback(() => {
+    setShowConfirmationModal(true);
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Header />
-      <ScrollView
-        keyboardDismissMode="on-drag"
-        stickyHeaderIndices={[0]}
-        style={styles.scroll}
-        showsVerticalScrollIndicator={false}>
-        <TopHeader>
-          <AccountFromTo
-            fromAccount={sourceAccount?.accountName!}
-            toAccount={gatheredInfo?.destinationAccount?.accountName!}
-            fromChainId={gatheredInfo?.chainId}
-            toChainId={gatheredInfo?.destinationAccount?.chainId!}
+    <>
+      <View style={styles.container}>
+        <Header />
+        <ScrollView
+          keyboardDismissMode="on-drag"
+          stickyHeaderIndices={[0]}
+          style={styles.scroll}
+          showsVerticalScrollIndicator={false}>
+          <TopHeader>
+            <AccountFromTo
+              fromAccount={sourceAccount?.accountName!}
+              toAccount={gatheredInfo?.destinationAccount?.accountName!}
+              fromChainId={gatheredInfo?.chainId}
+              toChainId={gatheredInfo?.destinationAccount?.chainId!}
+            />
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={Keyboard.dismiss}
+              style={styles.topHeaderContent}>
+              <WalletInfo />
+              {isCrossChainTransfer ? (
+                <Warning
+                  title="You are about to do a cross chain transfer"
+                  text="This operation usually takes more time"
+                />
+              ) : null}
+            </TouchableOpacity>
+          </TopHeader>
+          <Content />
+        </ScrollView>
+        <View style={styles.footer}>
+          <FooterButton
+            title="Send"
+            onPress={handlePressSend}
+            disabled={!gatheredInfo?.amount}
           />
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={Keyboard.dismiss}
-            style={styles.topHeaderContent}>
-            <WalletInfo />
-            {isCrossChainTransfer ? (
-              <Warning
-                title="You are about to do a cross chain transfer"
-                text="This operation usually takes more time"
-              />
-            ) : null}
-          </TouchableOpacity>
-        </TopHeader>
-        <Content />
-      </ScrollView>
-      <View style={styles.footer}>
-        <FooterButton
-          title="Send"
-          onPress={handlePressSend}
-          disabled={!gatheredInfo?.amount}
-        />
+        </View>
       </View>
-    </View>
+      <ConfirmModal
+        isVisible={showConfirmationModal}
+        close={() => setShowConfirmationModal(false)}
+        onConfirm={onConfirm}
+      />
+    </>
   );
 };
 
