@@ -6,6 +6,7 @@ import {
   Keyboard,
   Text,
   TextInput,
+  Alert,
 } from 'react-native';
 
 import TopHeader from '../../components/TopHeader';
@@ -67,32 +68,52 @@ const Send = () => {
         topOffset: statusBarHeight + 16,
       });
     } else {
-      dispatch(
-        setGatheredTransferInfo({
-          chainId: sourceChainId,
-          destinationAccount: {
-            accountName,
-            chainId: targetChainId,
-            publicKey: accountPublicKey,
-          },
-          predicate,
-        }),
-      );
-      dispatch(
-        setEstimatedGasFee({
-          speed: 'normal',
-          gasPrice: GAS_PRICE,
-          gasLimit: GAS_LIMIT,
-        }),
-      );
-      setTimeout(
-        () =>
-          navigation.navigate({
-            name: ERootStackRoutes.SendSummary,
-            params: undefined,
+      const proceedSending = () => {
+        dispatch(
+          setGatheredTransferInfo({
+            chainId: sourceChainId,
+            destinationAccount: {
+              accountName,
+              chainId: targetChainId,
+              publicKey: accountPublicKey,
+            },
+            predicate,
           }),
-        150,
-      );
+        );
+        dispatch(
+          setEstimatedGasFee({
+            speed: 'normal',
+            gasPrice: GAS_PRICE,
+            gasLimit: GAS_LIMIT,
+          }),
+        );
+        setTimeout(
+          () =>
+            navigation.navigate({
+              name: ERootStackRoutes.SendSummary,
+              params: undefined,
+            }),
+          150,
+        );
+      };
+      if (!accountName?.startsWith('k:')) {
+        Alert.alert(
+          'Sending to a non "k:account"',
+          'Are you sure you want to proceed?',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Proceed',
+              onPress: proceedSending,
+            },
+          ],
+        );
+      } else {
+        proceedSending();
+      }
     }
   }, [
     isCurrentlyTransferring,

@@ -23,10 +23,9 @@ import {makeSelectHashPassword} from '../../store/auth/selectors';
 import {ERootStackRoutes, TNavigationProp} from '../../routes/types';
 import {useScrollBottomOnKeyboard} from '../../utils/keyboardHelpers';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import queryString from 'query-string';
-import api from '../../api';
 import {useNavigation} from '@react-navigation/native';
 import {bottomSpace} from '../../utils/deviceHelpers';
+import {comparePassword} from '../../api/kadena/comparePassword';
 
 const bgImage = require('../../assets/images/bgimage.png');
 
@@ -80,15 +79,12 @@ const SignIn = () => {
 
   const handlePressSignIn = useCallback(
     (data: FieldValues) => {
-      api
-        .get(
-          `/api/compare-password?${queryString.stringify({
-            password: data.password || '',
-            hash,
-          })}`,
-        )
+      comparePassword({
+        password: data.password || '',
+        hash: hash || '',
+      })
         .then(compareResponse => {
-          if (compareResponse.data) {
+          if (compareResponse) {
             showSuccessAlert();
           } else {
             ReactNativeHapticFeedback.trigger('impactMedium', {

@@ -1,5 +1,8 @@
 import {StyleSheet} from 'react-native';
-import {MEDIUM_MONTSERRAT, REGULAR_MONTSERRAT} from '../../../../constants/styles';
+import {
+  MEDIUM_MONTSERRAT,
+  REGULAR_MONTSERRAT,
+} from '../../../../constants/styles';
 
 export const styles = StyleSheet.create({
   container: {

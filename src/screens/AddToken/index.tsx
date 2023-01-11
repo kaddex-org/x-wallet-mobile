@@ -1,4 +1,4 @@
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {Alert, Platform, ScrollView, View} from 'react-native';
 import {useForm, Controller, FieldValues} from 'react-hook-form';
 import {useDispatch} from 'react-redux';
@@ -15,8 +15,6 @@ import {
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {useScrollBottomOnKeyboard} from '../../utils/keyboardHelpers';
 import {makeSelectActiveNetworkDetails} from '../../store/networks/selectors';
-import api from '../../api';
-import queryString from 'query-string';
 import {getNetworkParams} from '../../utils/networkHelpers';
 import {addNewToken} from '../../store/userWallet';
 import {defaultBalances} from '../../store/userWallet/const';
@@ -30,6 +28,7 @@ import {
   TNavigationProp,
   TNavigationRouteProp,
 } from '../../routes/types';
+import {getToken} from '../../api/kadena/token';
 
 const AddToken = () => {
   const navigation =
@@ -37,6 +36,8 @@ const AddToken = () => {
   const route = useRoute<TNavigationRouteProp<ERootStackRoutes.AddToken>>();
 
   const dispatch = useDispatch();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const initialTokenName = route?.params?.tokenName || '';
   const selectedAccount = useShallowEqualSelector(makeSelectSelectedAccount);
@@ -59,17 +60,15 @@ const AddToken = () => {
   const handlePressSave = useCallback(
     (formValues: FieldValues) => {
       if (networkDetail && selectedAccount?.accountName) {
-        api
-          .get(
-            `/api/token?${queryString.stringify({
-              accountName: selectedAccount?.accountName,
-              token: formValues.tokenAddress,
-              ...networkDetail,
-              ...getNetworkParams(networkDetail),
-            })}`,
-          )
-          .then(response => {
-            if (response.data) {
+        setIsLoading(true);
+        getToken({
+          accountName: selectedAccount?.accountName,
+          token: formValues.tokenAddress,
+          ...networkDetail,
+          ...getNetworkParams(networkDetail),
+        })
+          .then(responseData => {
+            if (responseData) {
               dispatch(
                 addNewToken({
                   tokenAddress: formValues.tokenAddress,
@@ -78,6 +77,7 @@ const AddToken = () => {
                   chainBalance: defaultBalances,
                 }),
               );
+              setIsLoading(false);
               navigation.goBack();
               if (route?.params?.onTokenAdd) {
                 route?.params?.onTokenAdd(
@@ -104,6 +104,7 @@ const AddToken = () => {
             }
           })
           .catch(() => {
+            setIsLoading(false);
             ReactNativeHapticFeedback.trigger('impactMedium', {
               enableVibrateFallback: false,
               ignoreAndroidSystemSettings: false,
@@ -162,7 +163,7 @@ const AddToken = () => {
       </ScrollView>
       <View style={styles.footer}>
         <FooterButton
-          disabled={!isValid}
+          disabled={!isValid || isLoading}
           title="Add Token"
           onPress={handleSubmit(handlePressSave)}
         />

@@ -23,10 +23,6 @@ const ReceiveKDAModal: FC<TReceiveKDAModalProps> = React.memo(
             text={selectedAccount?.accountName || ''}
             title="Your account name"
           />
-          <ListItem
-            text={selectedAccount?.publicKey || ''}
-            title="Your Public key"
-          />
         </View>
       </Modal>
     );

@@ -5,10 +5,11 @@ import {
   ImageBackground,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Snackbar from 'react-native-snackbar';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import Logo from '../../assets/images/logo.svg';
 import ArrowLeftSvg from '../../assets/images/arrow-left.svg';
@@ -16,7 +17,10 @@ import ArrowLeftSvg from '../../assets/images/arrow-left.svg';
 import {styles} from './styles';
 import {ERootStackRoutes, TNavigationProp} from '../../routes/types';
 import {getGeneratePasswords} from '../../store/auth/actions';
-import {makeSelectGeneratedPhrases} from '../../store/auth/selectors';
+import {
+  makeSelectGeneratedPhrases,
+  makeSelectGeneratedPhrasesLoading,
+} from '../../store/auth/selectors';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {useShallowEqualSelector} from '../../store/utils';
 import {useNavigation} from '@react-navigation/native';
@@ -30,6 +34,7 @@ const SecretRecoveryPhrase = () => {
   const dispatch = useDispatch();
 
   const seeds = useShallowEqualSelector(makeSelectGeneratedPhrases);
+  const isLoading = useSelector(makeSelectGeneratedPhrasesLoading);
 
   const [isRevealed, setRevealed] = useState(false);
 
@@ -73,9 +78,13 @@ const SecretRecoveryPhrase = () => {
         <Logo width={50} height={50} />
         <Text style={styles.title}>Secret Recovery Phrase</Text>
         {isRevealed ? (
-          <Text style={styles.secretWords} onPress={copyToClipboard}>
-            {seeds}
-          </Text>
+          isLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.secretWords} onPress={copyToClipboard}>
+              {seeds}
+            </Text>
+          )
         ) : (
           <TouchableOpacity
             activeOpacity={0.8}
@@ -92,8 +101,9 @@ const SecretRecoveryPhrase = () => {
             your account.
           </Text>
           <Text style={styles.text}>
-            Warning: Never disclose your Secret Recovery Phrase. Anyone with
-            this phrase cane take your wallet forever.
+            Warning: Never disclose your Secret Recovery Phrase. We recommend
+            not to take screenshots when viewing secret phrases. Anyone with
+            this phrase can take your wallet forever.
           </Text>
         </View>
         <TouchableOpacity

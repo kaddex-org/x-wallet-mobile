@@ -13,7 +13,7 @@ export const reduceBalance = (balance: any, precision = 6): string => {
       balance = balance.decimal;
     }
     if (parseFloat(balance) % 1 === 0) {
-      return parseInt(balance, 10).toString();
+      return parseInt(balance).toString();
     }
     return (
       Math.trunc(parseFloat(balance) * Math.pow(10, precision)) /
@@ -49,9 +49,9 @@ export const extractDecimal = (num: any) => {
   }
 };
 
-export const humanReadableNumber = (num: number, toFixedParam = 2) =>
+export const humanReadableNumber = (num: number, toFixed = 2) =>
   extractDecimal(num)
-    ?.toFixed(toFixedParam)
+    ?.toFixed(toFixed)
     ?.replace(/\B(?=(\d{3})+(?!\d))/g, ',') ?? '';
 
 export const countDecimals = (value: number) => {
@@ -119,3 +119,14 @@ export function toFixed(num: any, fixed: number) {
   const re = new RegExp('^-?\\d+(?:.\\d{0,' + (fixed || -1) + '})?');
   return num.toString().match(re)[0];
 }
+
+export const convertDecimal = (decimal: number | string) => {
+  decimal = decimal.toString();
+  if (decimal.includes('.')) {
+    return decimal;
+  }
+  if (Number(decimal) / Math.floor(Number(decimal)) === 1) {
+    decimal += '.0';
+  }
+  return decimal;
+};

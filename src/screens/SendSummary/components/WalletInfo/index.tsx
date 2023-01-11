@@ -25,13 +25,6 @@ const WalletInfo = () => {
   const usdEquivalents = useSelector(makeSelectUsdEquivalents);
   const estimatedGasFee = useShallowEqualSelector(makeSelectEstimatedGasFee);
 
-  const gasUsdEquivalent = useMemo(() => {
-    if (Array.isArray(usdEquivalents)) {
-      return usdEquivalents?.find(item => item.token === 'gas')?.usd || 0;
-    }
-    return 0;
-  }, [usdEquivalents]);
-
   const inputAmount = useMemo(
     () => gatheredInfo.amount || 0,
     [gatheredInfo?.amount],
@@ -57,15 +50,10 @@ const WalletInfo = () => {
     return usdValue;
   }, [inputAmount, usdEquivalents]);
 
-  const kdaUsdEquivalent = useMemo(() => {
-    if (Array.isArray(usdEquivalents)) {
-      const foundUsdValue = (usdEquivalents || []).find(
-        item => item.token === 'coin',
-      );
-      return Number(foundUsdValue?.usd || 0);
-    }
-    return 0;
-  }, [usdEquivalents]);
+  const gasFee = useMemo(
+    () => (estimatedGasFee?.gasPrice || 0) * (estimatedGasFee?.gasLimit || 0),
+    [estimatedGasFee],
+  );
 
   const handleChangeText = useCallback((text: string) => {
     setInputText(`${text}`);
@@ -101,40 +89,34 @@ const WalletInfo = () => {
   useInputBlurOnKeyboard(inputRef);
 
   const onHalf = useCallback(() => {
+    let amountValue = balance / 2;
+    if (selectedToken?.tokenAddress === 'coin') {
+      amountValue -= gasFee;
+    }
     const amount = decimalIfNeeded(
-      toFixed(`${balance / 2}`.replace(',', '.'), 6),
+      toFixed(`${amountValue}`.replace(',', '.'), 6),
+      6,
     );
     setInputText(`${amount}`);
     dispatch(setGatheredTransferInfo({amount}));
-  }, [balance]);
+  }, [balance, gasFee, selectedToken]);
 
   const onMax = useCallback(() => {
+    let amountValue = balance;
+    if (selectedToken?.tokenAddress === 'coin') {
+      amountValue -= gasFee;
+    }
     const amount = decimalIfNeeded(
-      toFixed(
-        (
-          +balance -
-          (estimatedGasFee?.gasPrice || 0) *
-            (estimatedGasFee?.gasLimit || 0) *
-            (kdaUsdEquivalent && gasUsdEquivalent
-              ? kdaUsdEquivalent / gasUsdEquivalent
-              : 1)
-        )
-          .toString()
-          .replace(',', '.'),
-        6,
-      ),
+      toFixed(`${amountValue}`.replace(',', '.'), 6),
+      6,
     );
     setInputText(`${amount}`);
-    dispatch(
-      setGatheredTransferInfo({
-        amount,
-      }),
-    );
+    dispatch(setGatheredTransferInfo({amount}));
     Snackbar.show({
       text: 'Max amount also takes into consideration the estimated gas fee.',
       duration: Snackbar.LENGTH_LONG,
     });
-  }, [balance, gasUsdEquivalent, kdaUsdEquivalent, estimatedGasFee]);
+  }, [balance, selectedToken, gasFee]);
 
   return (
     <View style={styles.wrapper}>

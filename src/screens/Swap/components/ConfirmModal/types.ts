@@ -1,4 +1,4 @@
-import {TValues} from "../CurrencyInput/types";
+import {TValues} from '../CurrencyInput/types';
 
 export type TConfirmModal = {
   close: () => void;

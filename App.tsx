@@ -1,44 +1,23 @@
-import React, {useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
-import remoteConfig from '@react-native-firebase/remote-config';
-import {Platform, StatusBar} from 'react-native';
+import {Alert, Platform, StatusBar, StyleSheet, View} from 'react-native';
 import {Provider, useSelector} from 'react-redux';
 import RNBootSplash from 'react-native-bootsplash';
 import {PactProvider} from './src/contexts/Pact';
 import AppStack from './src/navigation/AppStack';
-import api from './src/api';
 import {makeSelectIsAuthorized} from './src/store/auth/selectors';
 import {persistor, store} from './src/store/store';
 import {PersistGate} from 'redux-persist/integration/react';
 import Toast from 'react-native-toast-message';
-import {SERVER_REMOTE_URL} from './src/api/constants';
 import WalletConnect from './src/utils/walletConnect';
+import LogoSvg from './src/assets/images/logo.svg';
+import JailMonkey from 'jail-monkey';
 
 const App = () => {
   const isAuthorized = useSelector(makeSelectIsAuthorized);
 
-  useEffect(() => {
+  const onReady = useCallback(() => {
     RNBootSplash.hide({fade: true});
-    remoteConfig()
-      .setDefaults({
-        SERVER_REMOTE_URL: SERVER_REMOTE_URL,
-      })
-      .then(() => remoteConfig().fetchAndActivate())
-      .then(() =>
-        remoteConfig().setConfigSettings({
-          minimumFetchIntervalMillis: 30000,
-        }),
-      )
-      .then(() => {
-        try {
-          const remoteServerURL = remoteConfig()
-            .getValue('SERVER_REMOTE_URL')
-            .asString();
-          if (remoteServerURL) {
-            api.defaults.baseURL = remoteServerURL;
-          }
-        } catch (e) {}
-      });
   }, []);
 
   const statusBarStyle = useMemo(
@@ -67,6 +46,32 @@ const App = () => {
     [isAuthorized],
   );
 
+  useEffect(() => {
+    if (JailMonkey.isJailBroken()) {
+      RNBootSplash.hide({fade: true});
+      Alert.alert(
+        'Device is rooted',
+        'Jail-broken or rooted devices can not use X-Wallet',
+        undefined,
+        {cancelable: false},
+      );
+    }
+  }, []);
+
+  if (JailMonkey.isJailBroken()) {
+    return (
+      <>
+        <StatusBar
+          barStyle={statusBarStyle}
+          backgroundColor={statusBarColor}
+          translucent={true}
+        />
+        <View style={styles.screen}>
+          <LogoSvg />
+        </View>
+      </>
+    );
+  }
   return (
     <>
       <StatusBar
@@ -74,7 +79,7 @@ const App = () => {
         backgroundColor={statusBarColor}
         translucent={true}
       />
-      <NavigationContainer theme={appTheme}>
+      <NavigationContainer onReady={onReady} theme={appTheme}>
         <AppStack />
       </NavigationContainer>
       <WalletConnect />
@@ -94,5 +99,15 @@ const AppContainer = () => {
     </Provider>
   );
 };
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+  },
+});
 
 export default AppContainer;

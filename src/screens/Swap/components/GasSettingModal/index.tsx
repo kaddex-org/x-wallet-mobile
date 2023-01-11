@@ -20,19 +20,18 @@ const GasSettingModal: FC<TGasSettingModalProps> = ({isVisible, toggle}) => {
   const [speed, setSpeed] = useState<TSpeed>('low');
 
   useEffect(() => {
-    pact.setGasConfiguration(GAS_OPTIONS.low.SWAP);
-    setSpeed('low');
-  }, [pact.enableGasStation]);
-
-  useEffect(() => {
-    handleSuggestedPrice(speed);
-  }, [speed]);
+    if (!pact.enableGasStation) {
+      pact.setGasConfiguration(GAS_OPTIONS.low.SWAP);
+      setSpeed('low');
+    }
+  }, [pact.enableGasStation, pact.setGasConfiguration]);
 
   useEffect(() => {
     if (!pact.enableGasStation && pact.networkGasData.networkCongested) {
       handleSuggestedPrice(speed);
     }
   }, [
+    speed,
     pact.networkGasData.networkCongested,
     pact.networkGasData.suggestedGasPrice,
     pact.networkGasData.highestGasPrice,
@@ -133,4 +132,4 @@ const GasSettingModal: FC<TGasSettingModalProps> = ({isVisible, toggle}) => {
   );
 };
 
-export default GasSettingModal;
+export default React.memo(GasSettingModal);

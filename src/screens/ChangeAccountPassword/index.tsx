@@ -20,12 +20,12 @@ import {useNavigation} from '@react-navigation/native';
 import {ERootStackRoutes, TNavigationProp} from '../../routes/types';
 import Toast from 'react-native-toast-message';
 import {statusBarHeight} from '../../utils/deviceHelpers';
-import api from '../../api';
-import queryString from 'query-string';
 import {setPassword} from '../../store/auth';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {useDispatch, useSelector} from 'react-redux';
 import {makeSelectHashPassword} from '../../store/auth/selectors';
+import {comparePassword} from '../../api/kadena/comparePassword';
+import {hashPassword} from '../../api/kadena/hashPassword';
 
 const fields: TFields[] = [
   {
@@ -61,24 +61,18 @@ const ChangeAccountPassword = () => {
 
   const handlePressChange = useCallback(
     (data: TChangeAccountPasswordForm) => {
-      api
-        .get(
-          `/api/compare-password?${queryString.stringify({
-            password: data.currentPassword || '',
-            hash,
-          })}`,
-        )
+      comparePassword({
+        password: data.currentPassword || '',
+        hash: hash || '',
+      })
         .then(compareResponse => {
-          if (compareResponse.data) {
-            api
-              .get(
-                `/api/hash-password?${queryString.stringify({
-                  password: data.newPassword || '',
-                })}`,
-              )
-              .then(hashResponse => {
-                if (hashResponse.data.hash) {
-                  dispatch(setPassword(hashResponse.data.hash));
+          if (compareResponse) {
+            hashPassword({
+              password: data.newPassword || '',
+            })
+              .then(hashResponseHash => {
+                if (hashResponseHash) {
+                  dispatch(setPassword(hashResponseHash));
                   Toast.show({
                     type: 'success',
                     position: 'top',

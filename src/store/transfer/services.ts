@@ -1,70 +1,43 @@
-import {TGetTransferContParams, TGetTransferParams} from './types';
-import api from '../../api';
-import {TReserveResponse} from '../../contexts/Pact/types';
+import {TGetTransferContParams} from './types';
+import {getTransferCross} from '../../api/kadena/transferCross';
+import {getTransferSingle} from '../../api/kadena/transferSingle';
+import {getTransferContinuation} from '../../api/kadena/transferContinuation';
+import {getSpv} from '../../api/kadena/spv';
+import {getSend} from '../../api/kadena/send';
+import {getSwap} from '../../api/kadena/swap';
+import {getPoll} from '../../api/kadena/poll';
+import {getSign} from '../../api/kadena/sign';
 
-export const getCrossTransferRequest = (params: TGetTransferParams) => {
-  return api
-    .get('/api/transfer-cross', {params})
-    .then(resp => {
-      return resp;
-    })
-    .catch(err => {
-      return err;
-    });
+export const getCrossTransferRequest = async (params: any) => {
+  return await getTransferCross(params);
 };
 
-export const getSimpleTransferRequest = (params: TGetTransferParams) => {
-  return api.get('/api/transfer-single', {params}).then(resp => {
-    return resp;
-  });
+export const getSimpleTransferRequest = async (params: any) => {
+  return await getTransferSingle(params);
 };
 
-export const getContinuationTransferRequest = (
+export const getContinuationTransferRequest = async (
   params: TGetTransferContParams,
 ) => {
-  return api.get('/api/transfer-continuation', {params}).then(resp => {
-    return resp;
-  });
+  return await getTransferContinuation(params);
 };
 
-export const getSpvRequest = (queryParams: string) => {
-  return api.get(`api/spv?${queryParams}`).then(resp => {
-    return resp;
-  });
+export const getSpvRequest = async (params: any) => {
+  return await getSpv(params);
 };
 
-export const getSendRequest = (queryParams: string) => {
-  return api.get(`/api/send?${queryParams}`).then(resp => {
-    return resp;
-  });
+export const getSendRequest = async (params: any) => {
+  return await getSend(params);
 };
 
-export const swapApiRequest = (queryParams: string) => {
-  return api.get(`/api/swap?${queryParams}`).then(res => {
-    return res;
-  });
+export const swapApiRequest = async (params: any) => {
+  return await getSwap(params);
 };
 
-export const pactApiRequest = (queryParams: string) => {
-  return api.get<TReserveResponse[]>(`/api/pact?${queryParams}`).then(res => {
-    return res;
-  });
+export const getPollRequest = async (params: any) => {
+  return await getPoll(params);
 };
 
-export const getListenRequest = (queryParams: string) => {
-  return api.get(`/api/listen?${queryParams}`).then(resp => {
-    return resp;
-  });
-};
-
-export const getPollRequest = (queryParams: string) => {
-  return api.get(`/api/poll?${queryParams}`).then(resp => {
-    return resp;
-  });
-};
-
-export const getSignRequest = (queryParams: string) => {
-  return api.get(`/api/sign?${queryParams}`).then(resp => {
-    return resp;
-  });
+export const getSignRequest = async (params: any) => {
+  return await getSign(params);
 };

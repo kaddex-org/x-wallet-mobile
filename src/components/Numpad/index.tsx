@@ -1,5 +1,12 @@
 import React, {FC, useCallback, useEffect, useMemo, useState} from 'react';
-import {View, Text, TouchableOpacity, Animated, Easing} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Easing,
+  Alert,
+} from 'react-native';
 import ReactNativeBiometrics, {BiometryType} from 'react-native-biometrics';
 import {useDispatch, useSelector} from 'react-redux';
 import {styles} from './styles';
@@ -20,6 +27,7 @@ import {login, setNewPinCode, storePinCode} from '../../store/auth';
 import {useNavigation} from '@react-navigation/native';
 import {ERootStackRoutes} from '../../routes/types';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import {isAllCharactersSame} from '../../utils/stringHelpers';
 
 const Numpad: FC<TNumpadProps> = ({isReset}) => {
   const dispatch = useDispatch();
@@ -131,7 +139,17 @@ const Numpad: FC<TNumpadProps> = ({isReset}) => {
         dispatch(setNewPinCode(null));
       }
     } else {
-      dispatch(setNewPinCode(pinCode));
+      if (
+        !isAllCharactersSame(pinCode) &&
+        pinCode.substring(0, 2) !== pinCode.substring(2, 4)
+      ) {
+        dispatch(setNewPinCode(pinCode));
+      } else {
+        Alert.alert(
+          'Weak passcode',
+          'Entered passcode is too week. Please try more complex passcode',
+        );
+      }
     }
   }, [newPinCode, pinCode, isReset, auth, navigateToHome]);
 
@@ -189,7 +207,7 @@ const Numpad: FC<TNumpadProps> = ({isReset}) => {
             key={num}
             style={[
               styles.smallCircle,
-              pinCodeLength >= num && styles.smallCircleWhite,
+              {backgroundColor: pinCodeLength >= num ? 'white' : undefined},
             ]}
           />
         ))}

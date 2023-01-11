@@ -1,6 +1,4 @@
-import {takeLatest, put, call, select} from 'redux-saga/effects';
-import queryString from 'query-string';
-import api from '../../api';
+import {takeLatest, put, select, call} from 'redux-saga/effects';
 import {DELETE_ACCOUNT, GET_GENERATE_PASSWORDS, LOGOUT} from './actions';
 import {
   setGeneratedPhrasesError,
@@ -17,11 +15,14 @@ import {setInitialTransferState} from '../transfer';
 import {makeSelectSelectedAccount} from '../userWallet/selectors';
 import {makeSelectActiveNetworkDetails} from '../networks/selectors';
 import {getNetworkParams} from '../../utils/networkHelpers';
+import {generatePasswords} from '../../api/kadena/generatePasswords';
+import {deleteAccount} from '../../api/kadena/deleteAccount';
+import {removeAllPersistData} from '../../utils/storageHelplers';
 
 function* getGeneratePassword() {
   yield put(setGeneratedPhrasesLoading(true));
   try {
-    const {data} = yield call(api.get, '/api/generate-passwords');
+    const data = yield call(generatePasswords);
     yield put(setGeneratedPhrasesSuccess(data));
   } catch (e) {
     yield put(setGeneratedPhrasesError(e));
@@ -34,18 +35,15 @@ function* logout() {
   yield put(signOut());
 }
 
-function* deleteAccount() {
+function* deleteAccountSaga() {
   try {
     const selectedAccount = yield select(makeSelectSelectedAccount);
     const activeNetwork = yield select(makeSelectActiveNetworkDetails);
-    yield call(
-      api.get,
-      `/api/delete-account?${queryString.stringify({
-        ...selectedAccount,
-        ...activeNetwork,
-        ...getNetworkParams(activeNetwork),
-      })}`,
-    );
+    yield deleteAccount({
+      ...selectedAccount,
+      ...activeNetwork,
+      ...getNetworkParams(activeNetwork),
+    });
   } catch (e) {
   } finally {
     yield put(setInitialAuthState());
@@ -54,11 +52,12 @@ function* deleteAccount() {
     yield put(setInitialNetworkState());
     yield put(setInitialTransferState());
     yield put(setInitialUserWalletState());
+    yield removeAllPersistData();
   }
 }
 
 export function* authSaga() {
   yield takeLatest(GET_GENERATE_PASSWORDS, getGeneratePassword);
   yield takeLatest(LOGOUT, logout);
-  yield takeLatest(DELETE_ACCOUNT, deleteAccount);
+  yield takeLatest(DELETE_ACCOUNT, deleteAccountSaga);
 }

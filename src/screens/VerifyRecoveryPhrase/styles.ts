@@ -6,7 +6,6 @@ export const styles = StyleSheet.create({
   bgImage: {
     flex: 1,
   },
-
   header: {
     position: 'absolute',
     top: statusBarHeight + 12,
@@ -14,7 +13,6 @@ export const styles = StyleSheet.create({
     alignItems: 'flex-start',
     width: '100%',
   },
-
   contentWrapper: {
     width: '100%',
   },
@@ -26,7 +24,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     minHeight: Dimensions.get('window').height,
   },
-
   inputsWrapper: {
     paddingHorizontal: 20,
     width: '100%',
@@ -34,39 +31,44 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-around',
   },
-
   inputWrapper: {
     marginBottom: 20,
     width: 100,
   },
-
-  input: {backgroundColor: 'white', paddingHorizontal: 0},
-
+  input: {
+    backgroundColor: 'white',
+    paddingHorizontal: 0,
+  },
   title: {
     fontFamily: MEDIUM_MONTSERRAT,
     fontSize: 24,
     fontWeight: '500',
     color: 'white',
-    marginTop: 25,
-    marginBottom: 51,
+    marginTop: 24,
   },
-
   text: {
     fontFamily: MEDIUM_MONTSERRAT,
     fontSize: 15,
     fontWeight: '500',
     color: 'white',
-    marginTop: 25,
-    marginBottom: 51,
+    marginTop: 40,
     textAlign: 'center',
     marginHorizontal: 20,
   },
-
+  warning: {
+    fontFamily: MEDIUM_MONTSERRAT,
+    fontSize: 15,
+    fontWeight: '500',
+    color: 'white',
+    marginTop: 16,
+    marginBottom: 40,
+    textAlign: 'center',
+    marginHorizontal: 20,
+  },
   errorText: {
     fontFamily: MEDIUM_MONTSERRAT,
     color: 'red',
   },
-
   button: {
     marginTop: 24,
     backgroundColor: '#FAA41A',

@@ -9,7 +9,6 @@ import {MMKV} from 'react-native-mmkv';
 import {useSelector} from 'react-redux';
 import {makeSelectSelectedAccount} from '../../store/userWallet/selectors';
 
-import {pactApiRequest} from '../../store/transfer/services';
 import {
   TGasConfig,
   TGetReservesProps,
@@ -19,6 +18,7 @@ import {
 import {GAS_OPTIONS} from '../../constants';
 import axios from 'axios';
 import {KADDEX_API_URL, KADDEX_NAMESPACE} from '../../api/constants';
+import {getPact} from '../../api/kadena/pact';
 
 export const FEE = 0.003;
 
@@ -44,7 +44,7 @@ export const PactProvider: FC = ({children}) => {
   );
   const [ttl, setTtl] = useState(storage.getNumber('ttl') || 600);
   const [ratio, setRatio] = useState(NaN);
-  const [enableGasStation, setEnableGasStation] = useState(false);
+  const [enableGasStation, setEnableGasStation] = useState(true);
   const [gasConfiguration, setGasConfiguration] = useState<TGasConfig>(
     GAS_OPTIONS.DEFAULT.SWAP,
   );
@@ -88,23 +88,24 @@ export const PactProvider: FC = ({children}) => {
   const getReserves = useCallback(async (props: TGetReservesProps) => {
     try {
       const {params} = props;
-      const res = await pactApiRequest(
-        `pactCode=(use ${KADDEX_NAMESPACE}.exchange) (let* ((p (get-pair ${props.token0Address} ${props.token1Address}))(reserveA (reserve-for p ${props.token0Address}))(reserveB (reserve-for p ${props.token1Address})))[reserveA reserveB])&customHost=${params.customHost}&network=${params.network}&chainId=${params.chainId}&instance=${params.instance}&version=${params.version}`,
-      );
-      if (res.data.length !== 0) {
+      const data = await getPact({
+        ...params,
+        pactCode: `(use ${KADDEX_NAMESPACE}.exchange) (let* ((p (get-pair ${props.token0Address} ${props.token1Address}))(reserveA (reserve-for p ${props.token0Address}))(reserveB (reserve-for p ${props.token1Address})))[reserveA reserveB])`,
+      });
+      if (data.length !== 0) {
         setPairReserve({
           token0:
-            typeof res.data[0] === 'number'
-              ? res.data[0]
-              : typeof res.data[0] !== 'string'
-              ? res.data[0].decimal
-              : res.data[0],
+            typeof data[0] === 'number'
+              ? data[0]
+              : typeof data[0] !== 'string'
+              ? data[0].decimal
+              : data[0],
           token1:
-            typeof res.data[1] === 'number'
-              ? res.data[1]
-              : typeof res.data[1] !== 'string'
-              ? res.data[1].decimal
-              : res.data[1],
+            typeof data[1] === 'number'
+              ? data[1]
+              : typeof data[1] !== 'string'
+              ? data[1].decimal
+              : data[1],
         });
       } else {
         setPairReserve({
@@ -165,7 +166,8 @@ export const PactProvider: FC = ({children}) => {
       const reserveIn = Number(pairReserve.token0);
       const midPrice = reserveOut / reserveIn;
       const exactQuote = Number(amountIn) * midPrice;
-      return (exactQuote - Number(amountOut)) / exactQuote;
+      const slippage = (exactQuote - Number(amountOut)) / exactQuote;
+      return slippage;
     },
     [pairReserve],
   );

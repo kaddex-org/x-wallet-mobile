@@ -21,11 +21,10 @@ import {changePassword} from '../../store/auth';
 import PasswordInput from '../../components/PasswordInput';
 import {createPasswordSchema} from '../../validation/createPasswordSchema';
 import {useScrollBottomOnKeyboard} from '../../utils/keyboardHelpers';
-import queryString from 'query-string';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import api from '../../api';
 import {useNavigation} from '@react-navigation/native';
 import {bottomSpace} from '../../utils/deviceHelpers';
+import {hashPassword} from '../../api/kadena/hashPassword';
 
 const bgImage = require('../../assets/images/bgimage.png');
 
@@ -45,15 +44,12 @@ const Registration = () => {
   }, [navigation]);
 
   const handlePressCreate = useCallback((data: FieldValues) => {
-    api
-      .get(
-        `/api/hash-password?${queryString.stringify({
-          password: data.password || '',
-        })}`,
-      )
-      .then(hashResponse => {
-        if (hashResponse.data.hash) {
-          dispatch(changePassword(hashResponse.data.hash));
+    hashPassword({
+      password: data.password || '',
+    })
+      .then(hashResponseHash => {
+        if (hashResponseHash) {
+          dispatch(changePassword(hashResponseHash));
           navigation.navigate({
             name: ERootStackRoutes.SecretRecoveryPhraseTerm,
             params: undefined,

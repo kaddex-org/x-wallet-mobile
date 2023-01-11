@@ -70,4 +70,4 @@ const SettingModal: FC<TSettingModal> = ({isVisible, close}) => {
   );
 };
 
-export default SettingModal;
+export default React.memo(SettingModal);

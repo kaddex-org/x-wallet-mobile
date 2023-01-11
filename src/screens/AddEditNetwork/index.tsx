@@ -2,7 +2,6 @@ import React, {useCallback, useMemo} from 'react';
 import {Alert, ScrollView, View} from 'react-native';
 import {useForm, Controller, FieldValues} from 'react-hook-form';
 import {useDispatch} from 'react-redux';
-import api from '../../api';
 import Header from './components/Header';
 import FooterButton from '../../components/FooterButton';
 import Input from '../../components/Input';
@@ -19,6 +18,7 @@ import {
   TNavigationProp,
   TNavigationRouteProp,
 } from '../../routes/types';
+import axios from 'axios';
 
 const AddEditNetwork = () => {
   const navigation =
@@ -49,7 +49,7 @@ const AddEditNetwork = () => {
   const handlePressSave = useCallback(
     async (data: FieldValues) => {
       try {
-        const response = await api.get(`${data.host}/info`);
+        const response = await axios.get(`${data.host}/info`);
         if (response.data?.nodeApiVersion && response.data?.nodeVersion) {
           const _data = {
             ...data,

@@ -8,24 +8,20 @@ import React, {
 } from 'react';
 import {View, Text, TouchableOpacity, Alert} from 'react-native';
 import Modal from 'react-native-modal';
-import api from '../../api';
 import {ERootStackRoutes, TNavigationProp} from '../../routes/types';
 import {styles} from './styles';
 import Input from '../../components/Input';
 import {logout} from '../../store/auth/actions';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
+import {verify2FA} from '../../api/2fa';
+import {makeSelectSelectedAccountPublicKey} from '../../store/userWallet/selectors';
 
 export type TConfirmModalProps = {
   isVisible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
-  seeds: string;
 };
 
-const Confirm2FaModal: FC<TConfirmModalProps> = ({
-  isVisible,
-  setVisible,
-  seeds,
-}) => {
+const Confirm2FaModal: FC<TConfirmModalProps> = ({isVisible, setVisible}) => {
   const navigation =
     useNavigation<TNavigationProp<ERootStackRoutes.RecoveryFromSeeds>>();
 
@@ -34,26 +30,31 @@ const Confirm2FaModal: FC<TConfirmModalProps> = ({
   const [verifying, setVerifying] = useState(false);
   const [code, setCode] = useState('');
 
+  const selectedAccountPublicKey = useSelector(
+    makeSelectSelectedAccountPublicKey,
+  );
+
   const verifyCode = useCallback(async () => {
     setVerifying(true);
     try {
-      const {data} = await api.post('/api/2fa/verify', {
-        secret: code,
-        secretRecovery: seeds,
-      });
-      setVerifying(false);
-      switch (data.status) {
-        case 'success':
-          setVisible(false);
-          return;
-        case 'code is incorrect':
-          Alert.alert('Authentication Failed', 'Incorrect code');
-          return;
+      if (selectedAccountPublicKey) {
+        const status = await verify2FA(selectedAccountPublicKey, code);
+        setVerifying(false);
+        switch (status) {
+          case 'success':
+            setVisible(false);
+            return;
+          case 'code is incorrect':
+            Alert.alert('Authentication Failed', 'Incorrect code');
+            return;
+        }
+      } else {
+        setVerifying(false);
       }
     } catch (e) {
       setVerifying(false);
     }
-  }, [seeds, navigation, code]);
+  }, [selectedAccountPublicKey, navigation, code]);
 
   const close = useCallback(() => {
     setVisible(false);

@@ -32,8 +32,10 @@ export enum APIRemoteRoute {
 }
 
 export enum NetworkName {
+  DEV_NETWORK = 'Devnet',
   TEST_NETWORK = 'Testnet',
   MAIN_NETWORK = 'Mainnet',
+  CUSTOM_NETWORK = 'Custom',
 }
 
 export type NodeInstance = {
@@ -103,7 +105,7 @@ export type NodeHash = {
 };
 
 export type DefaultQueryParams = {
-  network: NetworkName;
+  network: NetworkName | string;
 };
 
 export type PaginationParams = {

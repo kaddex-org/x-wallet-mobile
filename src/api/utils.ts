@@ -1,4 +1,9 @@
-import {NodeHash} from './types';
+import {APIRemoteRoute, NetworkName, NodeHash} from './types';
+import {
+  DEV_NETWORK_API_URL,
+  MAIN_NETWORK_API_URL,
+  TEST_NETWORK_API_URL,
+} from './constants';
 
 export const getTimestamp = () => Math.floor(new Date().getTime() / 1000) - 90;
 
@@ -50,4 +55,46 @@ export const getBalanceFromApiResponse = (res: any) => {
     balance = Number(res?.result?.data?.balance?.decimal);
   }
   return balance;
+};
+
+export const getPactHost = (
+  network: NetworkName | string,
+  version: string,
+  instance: string,
+  chainId: string | number,
+  customHost?: string | null,
+) => {
+  switch (network?.toLowerCase()) {
+    case NetworkName.MAIN_NETWORK.toLowerCase():
+      return `${MAIN_NETWORK_API_URL}${APIRemoteRoute.ChainWeb}/${version}/${instance}${APIRemoteRoute.BlockChain}/${chainId}${APIRemoteRoute.Pact}`;
+    case NetworkName.TEST_NETWORK.toLowerCase():
+      return `${TEST_NETWORK_API_URL}${APIRemoteRoute.ChainWeb}/${version}/${instance}${APIRemoteRoute.BlockChain}/${chainId}${APIRemoteRoute.Pact}`;
+    case NetworkName.DEV_NETWORK.toLowerCase():
+      return `${DEV_NETWORK_API_URL}${APIRemoteRoute.ChainWeb}/${version}/${instance}${APIRemoteRoute.BlockChain}/${chainId}${APIRemoteRoute.Pact}`;
+    case NetworkName.CUSTOM_NETWORK.toLowerCase():
+      return `${customHost}${APIRemoteRoute.ChainWeb}/${version}/${instance}${APIRemoteRoute.BlockChain}/${chainId}${APIRemoteRoute.Pact}`;
+    default:
+      return `${MAIN_NETWORK_API_URL}${APIRemoteRoute.ChainWeb}/${version}/${instance}${APIRemoteRoute.BlockChain}/${chainId}${APIRemoteRoute.Pact}`;
+  }
+};
+
+export const switchBetweenConfig = async (
+  network: NetworkName | string,
+  test: () => Promise<any>,
+  main: () => Promise<any>,
+  defaultFunc?: () => any,
+) => {
+  switch (network?.toLowerCase()) {
+    case NetworkName.MAIN_NETWORK.toLowerCase():
+      return main();
+    case NetworkName.TEST_NETWORK.toLowerCase():
+    case NetworkName.DEV_NETWORK.toLowerCase():
+      return test();
+    default:
+      if (defaultFunc) {
+        return defaultFunc();
+      }
+      break;
+  }
+  throw new Error('Wrong Parameters: invalid network');
 };

@@ -32,6 +32,7 @@ import {statusBarHeight} from '../../../../utils/deviceHelpers';
 import {TWallet} from '../../../../store/userWallet/types';
 import Warning from '../../../../components/Warning';
 import ConfirmModal from '../ConfirmModal';
+import {NetworkName} from '../../../../api/types';
 
 const SwapBlock = () => {
   const selectedAccount = useShallowEqualSelector(makeSelectSelectedAccount);
@@ -95,7 +96,7 @@ const SwapBlock = () => {
       token1Address: toValues.address,
       params: {
         customHost: networkDetail.host,
-        network: networkDetail.mainnet,
+        network: NetworkName.CUSTOM_NETWORK,
         chainId: 2,
         instance: networkDetail.instance,
         version: networkDetail.version,
@@ -291,4 +292,4 @@ const SwapBlock = () => {
   );
 };
 
-export default SwapBlock;
+export default React.memo(SwapBlock);

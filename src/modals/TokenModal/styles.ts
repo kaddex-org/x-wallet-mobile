@@ -18,6 +18,9 @@ export const styles = StyleSheet.create({
   checkBoxWrapper: {
     marginBottom: 24,
   },
+  warning: {
+    marginBottom: 8,
+  },
   modalFooter: {
     borderTopColor: 'rgba(223,223,237,0.5)',
     borderTopWidth: 1,
@@ -26,7 +29,7 @@ export const styles = StyleSheet.create({
     marginBottom: 5,
   },
   itemStyle: {
-    marginBottom: 18,
+    marginTop: 20,
   },
   modalStyle: {
     minHeight: windowHeight * 0.35 - 48,

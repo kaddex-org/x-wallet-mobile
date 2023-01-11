@@ -1,6 +1,5 @@
 import {put, select, takeEvery} from 'redux-saga/effects';
-import queryString from 'query-string';
-import {AxiosError, AxiosResponse} from 'axios';
+import {AxiosError} from 'axios';
 
 import {TAction} from '../types';
 import {
@@ -92,14 +91,12 @@ function* makeTransfer({payload}: TAction<TMakeTransferRequest>) {
       ...getNetworkParams(networkDetail),
     };
 
-    let {data: cmdValue} = yield getTransferCmd();
+    let cmdValue = yield getTransferCmd();
 
-    const {data: txRes}: AxiosResponse = yield getSendRequest(
-      queryString.stringify({
-        cmdValue: JSON.stringify(cmdValue),
-        ...reqParams,
-      }),
-    );
+    const txRes = yield getSendRequest({
+      cmdValue: JSON.stringify(cmdValue),
+      ...reqParams,
+    });
 
     const reqKey = txRes.requestKeys[0];
     yield put(
@@ -135,13 +132,11 @@ function* makeTransfer({payload}: TAction<TMakeTransferRequest>) {
       yield wait(10000);
       try {
         listenAttempt += 1;
-        const {data: pollApiResult} = yield getPollRequestAPI(
-          queryString.stringify({
-            requestKeys: [txRes.requestKeys[0]],
-            ...reqParams,
-            chainId: sourceChainId,
-          }),
-        );
+        const pollApiResult = yield getPollRequestAPI({
+          requestKeys: [txRes.requestKeys[0]],
+          ...reqParams,
+          chainId: sourceChainId,
+        });
         if (pollApiResult && pollApiResult[txRes.requestKeys[0]]) {
           listenResult = pollApiResult[txRes.requestKeys[0]];
         }
@@ -196,15 +191,13 @@ function* makeTransfer({payload}: TAction<TMakeTransferRequest>) {
         yield wait(10000);
         try {
           proofAttempt += 1;
-          const spvResultResponse = yield getSpvRequest(
-            queryString.stringify({
-              ...reqParams,
-              cmdValue: JSON.stringify(spvCmd),
-              requestKey: listenResult.reqKey,
-            }),
-          );
-          if (spvResultResponse.data) {
-            proof = spvResultResponse.data;
+          const spvResultData = yield getSpvRequest({
+            ...reqParams,
+            cmdValue: JSON.stringify(spvCmd),
+            requestKey: listenResult.reqKey,
+          });
+          if (spvResultData) {
+            proof = spvResultData;
           }
         } catch (e) {}
       }
@@ -212,7 +205,7 @@ function* makeTransfer({payload}: TAction<TMakeTransferRequest>) {
         throw new Error('Waiting Proof failed with timeout');
       }
 
-      const {data: newCmdValue} = yield getContinuationTransferRequest({
+      const newCmdValue = yield getContinuationTransferRequest({
         instance,
         version,
         targetChainId:
@@ -224,13 +217,11 @@ function* makeTransfer({payload}: TAction<TMakeTransferRequest>) {
       });
 
       yield wait(30000);
-      const {data: conTxResult}: AxiosResponse = yield getSendRequest(
-        queryString.stringify({
-          cmdValue: JSON.stringify(newCmdValue),
-          ...reqParams,
-          sourceChainId: destinationAccount?.chainId!,
-        }),
-      );
+      const conTxResult = yield getSendRequest({
+        cmdValue: JSON.stringify(newCmdValue),
+        ...reqParams,
+        sourceChainId: destinationAccount?.chainId!,
+      });
 
       yield put(
         setTransferResult({
@@ -268,13 +259,11 @@ function* makeTransfer({payload}: TAction<TMakeTransferRequest>) {
         yield wait(10000);
         try {
           conListenAttempt += 1;
-          const {data: conPollApiResult} = yield getPollRequestAPI(
-            queryString.stringify({
-              requestKeys: [conTxResult.requestKeys[0]],
-              ...reqParams,
-              chainId: destinationAccount?.chainId!,
-            }),
-          );
+          const conPollApiResult = yield getPollRequestAPI({
+            requestKeys: [conTxResult.requestKeys[0]],
+            ...reqParams,
+            chainId: destinationAccount?.chainId!,
+          });
           if (
             conPollApiResult &&
             conPollApiResult[conTxResult.requestKeys[0]]
@@ -450,15 +439,13 @@ function* finishTransfer({payload}: TAction<TFinishTransferRequest>) {
       yield wait(10000);
       try {
         proofAttempt += 1;
-        const spvResultResponse = yield getSpvRequest(
-          queryString.stringify({
-            ...reqParams,
-            cmdValue: JSON.stringify(spvCmd),
-            requestKey: activity.requestKey,
-          }),
-        );
-        if (spvResultResponse.data) {
-          proof = spvResultResponse.data;
+        const spvResultData = yield getSpvRequest({
+          ...reqParams,
+          cmdValue: JSON.stringify(spvCmd),
+          requestKey: activity.requestKey,
+        });
+        if (spvResultData) {
+          proof = spvResultData;
         }
       } catch (e) {}
     }
@@ -467,7 +454,7 @@ function* finishTransfer({payload}: TAction<TFinishTransferRequest>) {
       throw new Error('Waiting Proof failed with timeout');
     }
 
-    let {data: cmdValue} = yield getContinuationTransferRequest({
+    let cmdValue = yield getContinuationTransferRequest({
       instance,
       version,
       targetChainId: activity?.targetChainId!,
@@ -477,13 +464,11 @@ function* finishTransfer({payload}: TAction<TFinishTransferRequest>) {
     });
 
     yield wait(30000);
-    const {data: txRes}: AxiosResponse = yield getSendRequest(
-      queryString.stringify({
-        cmdValue: JSON.stringify(cmdValue),
-        ...reqParams,
-        sourceChainId: activity.targetChainId!,
-      }),
-    );
+    const txRes = yield getSendRequest({
+      cmdValue: JSON.stringify(cmdValue),
+      ...reqParams,
+      sourceChainId: activity.targetChainId!,
+    });
 
     const reqKey = txRes.requestKeys[0];
     yield put(
@@ -522,13 +507,11 @@ function* finishTransfer({payload}: TAction<TFinishTransferRequest>) {
       yield wait(10000);
       try {
         listenAttempt += 1;
-        const {data: pollApiResult} = yield getPollRequestAPI(
-          queryString.stringify({
-            requestKeys: [txRes.requestKeys[0]],
-            ...reqParams,
-            chainId: activity.targetChainId!,
-          }),
-        );
+        const pollApiResult = yield getPollRequestAPI({
+          requestKeys: [txRes.requestKeys[0]],
+          ...reqParams,
+          chainId: activity.targetChainId!,
+        });
         if (pollApiResult && pollApiResult[txRes.requestKeys[0]]) {
           listenResult = pollApiResult[txRes.requestKeys[0]];
         }
@@ -638,9 +621,7 @@ function* finishTransfer({payload}: TAction<TFinishTransferRequest>) {
 function* swapRequest({payload}: TAction<TSwapRequest>) {
   yield put(swapRequestPending());
   try {
-    const {data: txRes}: AxiosResponse = yield swapApiRequest(
-      queryString.stringify(payload),
-    );
+    const txRes = yield swapApiRequest(payload);
 
     yield put(
       setSendResult({
@@ -669,12 +650,10 @@ function* swapRequest({payload}: TAction<TSwapRequest>) {
       yield wait(10000);
       try {
         listenAttempt += 1;
-        const {data: pollApiResult} = yield getPollRequestAPI(
-          queryString.stringify({
-            requestKeys: [txRes.requestKeys[0]],
-            ...payload,
-          }),
-        );
+        const pollApiResult = yield getPollRequestAPI({
+          requestKeys: [txRes.requestKeys[0]],
+          ...payload,
+        });
         if (pollApiResult && pollApiResult[txRes.requestKeys[0]]) {
           listenResult = pollApiResult[txRes.requestKeys[0]];
         }

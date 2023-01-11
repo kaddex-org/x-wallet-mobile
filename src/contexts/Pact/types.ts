@@ -32,9 +32,9 @@ export type TGetReservesProps = {
   params: {
     customHost: string;
     network: string;
-    chainId: number;
+    chainId: number | string;
     instance: string;
-    version: number;
+    version: string;
   };
 };
 

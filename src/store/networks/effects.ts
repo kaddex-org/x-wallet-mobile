@@ -1,5 +1,5 @@
 import {call, put, takeLatest} from 'redux-saga/effects';
-import {AxiosResponse} from 'axios';
+import axios, {AxiosResponse} from 'axios';
 
 import {GET_NETWORK_DETAILS_REQUEST} from './actions';
 import {
@@ -9,7 +9,6 @@ import {
 } from './index';
 import {TNetwork} from '../../screens/Networks/components/Item/types';
 import {TAction} from '../types';
-import api from '../../api';
 import {TNetworkDetail} from './types';
 
 function* getNetworkDetailsRequest({payload}: TAction<TNetwork>) {
@@ -17,9 +16,9 @@ function* getNetworkDetailsRequest({payload}: TAction<TNetwork>) {
   try {
     const {
       data: {nodeApiVersion, nodeVersion, nodeChains},
-    }: AxiosResponse = yield call(api.get, `${payload.host}/info`);
+    }: AxiosResponse = yield call(axios.get, `${payload.host}/info`);
     const {data}: AxiosResponse = yield call(
-      api.get,
+      axios.get,
       `${payload.host}/chainweb/${nodeApiVersion}/${nodeVersion}/cut`,
     );
     const resp: TNetworkDetail = {

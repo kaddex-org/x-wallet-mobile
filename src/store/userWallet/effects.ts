@@ -1,12 +1,10 @@
-import queryString from 'query-string';
-import {AxiosError, AxiosResponse} from 'axios';
-import {call, put, select, takeLatest} from 'redux-saga/effects';
+import axios, {AxiosError, AxiosResponse} from 'axios';
+import {put, select, takeLatest} from 'redux-saga/effects';
 
 import {TAction} from '../types';
 import {
   TAccount,
   TAccountImportRequest,
-  TBalanceResponse,
   TEstimatedUsdResponse,
   TGenAccountParams,
   TBalancesRequest,
@@ -21,7 +19,6 @@ import {
   getBalances,
   getGenerateAccount,
 } from './actions';
-import api from '../../api';
 import {
   addNewAccount,
   setBalanceDetailError,
@@ -39,11 +36,15 @@ import {defaultWallets, reverseCoins} from './const';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {TRestoreAccountParams} from './types';
 import {GET_RESTORE_ACCOUNT} from './actions';
-import {KADDEX_NAMESPACE} from '../../api/constants';
+import {KADDEX_NAMESPACE, nonTransferableTokens} from '../../api/constants';
 import {
   getTokenUsdPriceByLiquidity,
   reduceBalance,
 } from '../../utils/numberHelpers';
+import {getBalance} from '../../api/kadena/balance';
+import {getPact} from '../../api/kadena/pact';
+import {generateAccount} from '../../api/kadena/generateAccount';
+import {getAccount} from '../../api/kadena/account';
 
 function* getBalancesRequest({payload}: TAction<TBalancesRequest>) {
   yield put(setBalanceDetailLoading(true));
@@ -54,14 +55,11 @@ function* getBalancesRequest({payload}: TAction<TBalancesRequest>) {
 
     const balancesForWallet: TWallet[] = yield Promise.all(
       (selectedAccount?.wallets || []).map(async (walletItem: TWallet) => {
-        const {data: balanceResponse}: AxiosResponse<TBalanceResponse> =
-          await api.get(
-            `/api/balance?${queryString.stringify({
-              ...payload,
-              accountName: selectedAccount?.accountName,
-              token: walletItem.tokenAddress,
-            })}`,
-          );
+        const balanceResponse = await getBalance({
+          ...payload,
+          accountName: selectedAccount?.accountName,
+          token: walletItem.tokenAddress,
+        } as any);
         return {
           ...walletItem,
           ...(balanceResponse || {}),
@@ -73,7 +71,7 @@ function* getBalancesRequest({payload}: TAction<TBalancesRequest>) {
 
     let estimatedUsdResponse: any;
     try {
-      const usdResponse: AxiosResponse<TEstimatedUsdResponse> = yield api.get(
+      const usdResponse: AxiosResponse<TEstimatedUsdResponse> = yield axios.get(
         'https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=kadena,gas',
       );
       estimatedUsdResponse = usdResponse?.data;
@@ -92,11 +90,10 @@ function* getBalancesRequest({payload}: TAction<TBalancesRequest>) {
     const tokenPairListResponse: any[] = yield Promise.all(
       tokenPairList.map(async pairList => {
         try {
-          const {data: tokenListDetails} = await api.get(
-            `/api/pact?${queryString.stringify({
-              ...payload,
-              chainId: '2',
-              pactCode: `
+          const tokenListDetails = await getPact({
+            ...payload,
+            chainId: '2',
+            pactCode: `
               (namespace 'free)
   
               (module ${KADDEX_NAMESPACE}-read G
@@ -122,8 +119,7 @@ function* getBalancesRequest({payload}: TAction<TBalancesRequest>) {
               )
               (map (${KADDEX_NAMESPACE}-read.pair-info) [${pairList}])
                `,
-            })}`,
-          );
+          } as any);
           return tokenListDetails || [];
         } catch (e) {
           return [];
@@ -217,16 +213,10 @@ function* getGenerateAccountRequest({payload}: TAction<TGenAccountParams>) {
   try {
     const seedsFromState = yield select(makeSelectGeneratedPhrases);
     const seeds = payload?.seeds || seedsFromState;
-    const {data}: AxiosResponse<TAccount> = yield call(
-      api.get,
-      '/api/generate',
-      {
-        params: {
-          seeds,
-          accountIndex: payload?.accountIndex || 0,
-        },
-      },
-    );
+    const data: TAccount = yield generateAccount({
+      seeds,
+      accountIndex: payload?.accountIndex || 0,
+    });
     if (seeds !== undefined) {
       const accounts: TAccount[] = yield select(makeSelectAccounts);
       if (accounts.some(item => item.publicKey === data.publicKey)) {
@@ -273,11 +263,7 @@ function* getGenerateAccountRequest({payload}: TAction<TGenAccountParams>) {
 
 function* getImportAccountRequest({payload}: TAction<TAccountImportRequest>) {
   try {
-    const {data}: AxiosResponse<TAccount> = yield call(
-      api.get,
-      '/api/account',
-      {params: payload},
-    );
+    const data: TAccount = yield getAccount(payload as any);
     yield put(
       addNewAccount({
         ...data,
@@ -292,16 +278,16 @@ function* getImportAccountRequest({payload}: TAction<TAccountImportRequest>) {
       enableVibrateFallback: false,
       ignoreAndroidSystemSettings: false,
     });
-    Alert.alert('Failed to import the account', error.response?.data);
+    Alert.alert(
+      'Failed to import the account',
+      error?.response?.data || error?.message,
+    );
   }
 }
 
 function* getRestoreAccount({payload}: TAction<TRestoreAccountParams>) {
   try {
-    const {data} = yield call(
-      api.get,
-      `/api/generate?${queryString.stringify(payload)}`,
-    );
+    const data = yield generateAccount(payload);
     yield put(
       addNewAccount({
         ...data,
@@ -315,30 +301,25 @@ function* getRestoreAccount({payload}: TAction<TRestoreAccountParams>) {
       enableVibrateFallback: false,
       ignoreAndroidSystemSettings: false,
     });
-    Alert.alert('Failed to import the account', error.response?.data);
+    Alert.alert(
+      'Failed to import the account',
+      error?.response?.data || error?.message,
+    );
   }
 }
 
 function* getTokenList({payload}: TAction<TSearchTokenListParams>) {
   try {
-    const {data: tokenListData} = yield call(
-      api.get,
-      `/api/pact?${queryString.stringify({
-        ...payload,
-        chainId: '2',
-        pactCode: '(list-modules)',
-      })}`,
-    );
+    const tokenListData = yield getPact({
+      ...payload,
+      chainId: '2',
+      pactCode: '(list-modules)',
+    } as any);
     const tokenList = (tokenListData || []).filter(
       (item: string) => item !== 'coin' && item !== 'kaddex.kdx',
     );
     yield put(setSearchTokenList(tokenList));
-
-    const {data: nonTransferableTokenData} = yield call(
-      api.get,
-      '/api/non-transferable',
-    );
-    yield put(setNonTransferableTokenList(nonTransferableTokenData || []));
+    yield put(setNonTransferableTokenList(nonTransferableTokens || []));
   } catch (err) {
     yield put(setSearchTokenList([]));
     yield put(setNonTransferableTokenList([]));

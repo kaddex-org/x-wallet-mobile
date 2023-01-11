@@ -25,7 +25,6 @@ import JSONTree from 'react-native-json-tree';
 import {getNetwork} from './networkHelpers';
 import {getSignRequest} from '../store/transfer/services';
 import {makeSelectAccounts} from '../store/userWallet/selectors';
-import queryString from 'query-string';
 import {EDefaultNetwork} from '../screens/Networks/types';
 import {setIsConnectedWalletConnect} from '../store/userWallet';
 import {getSavedValue} from './storageHelplers';
@@ -311,20 +310,18 @@ export default function WalletConnect() {
             item.accountName === cmdValue?.sender ||
             item.publicKey === cmdValue?.signingPubKey,
         );
-        const signResultResponse = await getSignRequest(
-          queryString.stringify({
-            network: getNetwork(EDefaultNetwork.devnet),
-            instance: cmdValue.networkId,
-            version: cmdValue.networkVersion || '0.0',
-            sourceChainId: cmdValue.chainId || '2',
-            cmdValue: JSON.stringify(cmdValue),
-            publicKey: foundAccount?.publicKey || '',
-            signature: foundAccount?.privateKey || '',
-          }),
-        );
+        const signResultData = await getSignRequest({
+          network: getNetwork(EDefaultNetwork.devnet),
+          instance: cmdValue.networkId,
+          version: cmdValue.networkVersion || '0.0',
+          sourceChainId: cmdValue.chainId || '2',
+          cmdValue: JSON.stringify(cmdValue),
+          publicKey: foundAccount?.publicKey || '',
+          signature: foundAccount?.privateKey || '',
+        });
 
         const response = formatJsonRpcResult(eventId, {
-          signedCmd: signResultResponse.data,
+          signedCmd: signResultData,
         });
         await signClient?.respond({
           topic,

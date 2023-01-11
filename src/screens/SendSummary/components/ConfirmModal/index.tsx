@@ -59,10 +59,6 @@ const ConfirmModal: FC<TConfirmModal> = ({isVisible, close, onConfirm}) => {
             <Text style={styles.title}>{'Speed:'}</Text>
             <Text style={styles.text}>{`${speed.toUpperCase()}`}</Text>
           </View>
-          <View style={styles.item}>
-            <Text style={styles.title}>{'Gas Limit:'}</Text>
-            <Text style={styles.text}>{gasLimit}</Text>
-          </View>
         </View>
         <View style={styles.footer}>
           {isCrossChainTransfer ? (

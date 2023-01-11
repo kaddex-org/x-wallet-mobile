@@ -18,6 +18,9 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {useShallowEqualSelector} from '../../store/utils';
 import TrashEmptySvg from '../../assets/images/trash-empty.svg';
 import ArrowTopBottomRightSvg from '../../assets/images/arrow-top-right.svg';
+import Warning from '../../components/Warning';
+import ListItem from '../../components/ListItem';
+import PencilEditSvg from '../../assets/images/pencil-edit.svg';
 
 const TokenModal: FC<TTokenModalProps> = React.memo(
   ({toggle, isVisible, canDelete}) => {
@@ -94,6 +97,19 @@ const TokenModal: FC<TTokenModalProps> = React.memo(
       );
     }, [toggle, selectedToken]);
 
+    const handlePressEdit = useCallback(() => {
+      toggle();
+      setTimeout(() => navigation.navigate(ERootStackRoutes.AddToken), 150);
+    }, [toggle, navigation]);
+
+    const isTokenNonTransferable = useMemo(
+      () =>
+        selectedToken?.tokenAddress
+          ? (nonTransferableTokens || []).includes(selectedToken?.tokenAddress)
+          : false,
+      [nonTransferableTokens, selectedToken?.tokenAddress],
+    );
+
     if (!selectedToken) {
       return null;
     }
@@ -102,19 +118,53 @@ const TokenModal: FC<TTokenModalProps> = React.memo(
         isVisible={isVisible}
         close={toggle}
         title={`${selectedToken.tokenName} Chain Distribution`}
-        onPressLeftItem={canDelete ? handlePressRemove : undefined}
-        leftHeaderItem={canDelete ? <TrashEmptySvg /> : undefined}
+        onPressLeftItem={
+          canDelete && (selectedTokenDistributions || []).length > 0
+            ? handlePressRemove
+            : undefined
+        }
+        leftHeaderItem={
+          canDelete && (selectedTokenDistributions || []).length > 0 ? (
+            <TrashEmptySvg />
+          ) : undefined
+        }
         contentStyle={styles.modalStyle}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContentWrapper}>
-            {(selectedTokenDistributions || []).length === 0 ? (
-              <Text style={styles.emptyText}>{'No chain distributions'}</Text>
+            {!!selectedToken && isTokenNonTransferable ? (
+              <Warning
+                style={styles.warning}
+                isSerious={true}
+                centerText={true}
+                title={`${selectedToken?.tokenAddress} is not transferable!`}
+              />
+            ) : null}
+            {!!selectedToken &&
+            (selectedTokenDistributions || []).length === 0 ? (
+              <>
+                <Warning
+                  style={styles.warning}
+                  noIcon={true}
+                  centerText={true}
+                  title={`${selectedToken?.tokenName} Balance is 0`}
+                />
+                <ListItem
+                  text="Edit Token"
+                  icon={<PencilEditSvg />}
+                  style={styles.itemStyle}
+                  onPress={handlePressEdit}
+                />
+                <ListItem
+                  text="Remote Token"
+                  icon={<TrashEmptySvg />}
+                  style={styles.itemStyle}
+                  onPress={handlePressRemove}
+                />
+              </>
             ) : (
               (selectedTokenDistributions || []).map(distribution => (
                 <TouchableOpacity
-                  disabled={nonTransferableTokens.includes(
-                    selectedToken.tokenAddress,
-                  )}
+                  disabled={isTokenNonTransferable}
                   key={`${selectedToken.tokenName} ${distribution.chainId}`}
                   activeOpacity={0.8}
                   onPress={() => handlePressTransfer(distribution.chainId)}

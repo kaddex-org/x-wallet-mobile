@@ -19,6 +19,11 @@ export const makeSelectSelectedAccount = createSelector(
   state => state.selectedAccount,
 );
 
+export const makeSelectSelectedAccountPublicKey = createSelector(
+  selectedState,
+  state => state.selectedAccount?.publicKey,
+);
+
 export const makeSelectSearchTokenList = createSelector(
   selectedState,
   state => state.searchTokenList,

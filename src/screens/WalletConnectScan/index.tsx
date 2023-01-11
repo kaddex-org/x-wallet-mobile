@@ -23,7 +23,9 @@ const WalletConnectScan = () => {
     useNavigation<TNavigationProp<ERootStackRoutes.WalletConnectScan>>();
 
   const [hasPermission, setHasPermission] = useState(false);
-  const [textUri, setTexTUri] = useState<string>('');
+  const [textUri, setTexTUri] = useState<string>(
+    'wc:e3a9269dfc0e8eca426b10be4eb6422edc771a7a57057dbfe60ea07509154124@2?relay-protocol=irn&symKey=56c62c552d3a6cd5b2a3edf96194b42fb8e758b80bffd3bac85df964c88f40b6',
+  );
 
   const devices = useCameraDevices();
   const device = devices.back;

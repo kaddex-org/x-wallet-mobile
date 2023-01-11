@@ -1,11 +1,17 @@
+import './shim.js';
+import 'react-native-get-random-values';
 import '@walletconnect/react-native-compat';
 import 'react-native-reanimated';
 import {AppRegistry, LogBox} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 import {enableTypography} from './src/utils/typegraphy';
+import {initKadenaHelpers} from './src/utils/kadenaHelpers';
 
 enableTypography();
+try {
+  initKadenaHelpers();
+} catch (e) {}
 
 LogBox.ignoreLogs([
   'Animated:',
@@ -18,7 +24,7 @@ LogBox.ignoreLogs([
   "Accessing the 'state' property of the 'route' object is not supported",
   'react-native-extra-dimensions-android is only available on Android',
   'EventEmitter',
-  'VirtualizedLists should never be nested inside plain ScrollViews',
+  'VirtualizedLists should never',
   'ViewPropTypes will be removed',
   'Using Math.random',
 ]);

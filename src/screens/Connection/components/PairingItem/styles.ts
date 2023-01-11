@@ -2,7 +2,7 @@ import {StyleSheet} from 'react-native';
 import {
   BOLD_MONTSERRAT,
   MAIN_COLOR,
-  MEDIUM_MONTSERRAT, SEMI_BOLD_MONTSERRAT,
+  MEDIUM_MONTSERRAT,
 } from '../../../../constants/styles';
 
 export const styles = StyleSheet.create({

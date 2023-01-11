@@ -31,7 +31,9 @@ const SelectTokenModal: FC<TSelectTokenModal> = React.memo(
     const dispatch = useDispatch();
 
     const [searchText, setSearchText] = useState('');
-    const [filteredWallets, setFilteredWallets] = useState<any[]>([]);
+    const [filteredWallets, setFilteredWallets] = useState<
+      (TWallet & {notInWallet?: boolean})[]
+    >([]);
 
     useEffect(() => {
       setSearchText('');
@@ -172,9 +174,13 @@ const SelectTokenModal: FC<TSelectTokenModal> = React.memo(
                 onPress={handleTokenPress(walletItem)}
                 style={[
                   styles.token,
-                  (selectedToken.coin === walletItem.tokenName ||
-                    anotherToken.coin === walletItem.tokenName) &&
-                    styles.tokenOpacityHalf,
+                  {
+                    opacity:
+                      selectedToken.coin === walletItem.tokenName ||
+                      anotherToken.coin === walletItem.tokenName
+                        ? 0.5
+                        : 1,
+                  },
                 ]}>
                 {getAssetImageView(walletItem.tokenAddress)}
                 <Text style={styles.tokenName}>{walletItem.tokenName}</Text>

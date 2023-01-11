@@ -4,35 +4,37 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   ScrollView,
   Platform,
+  Dimensions,
 } from 'react-native';
-
+import QRCode from 'react-native-qrcode-svg';
 import Toast from 'react-native-toast-message';
 import {useDispatch, useSelector} from 'react-redux';
 import ListItem from './components/ListItem';
 import {setIs2FaAdded} from '../../store/auth';
-import {
-  makeSelectGeneratedPhrases,
-  makeSelectIs2FaAdded,
-} from '../../store/auth/selectors';
+import {makeSelectIs2FaAdded} from '../../store/auth/selectors';
 import {MAIN_COLOR} from '../../constants/styles';
 import {bottomSpace, statusBarHeight} from '../../utils/deviceHelpers';
-import api from '../../api';
 import FooterButton from '../../components/FooterButton';
 import Input from '../../components/Input';
 import ArrowLeftSvg from '../../assets/images/arrow-left.svg';
 import {styles} from './styles';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
+import {deactivate2FA, generate2FA, verify2FA} from '../../api/2fa';
+import {makeSelectSelectedAccountPublicKey} from '../../store/userWallet/selectors';
+
+const windowWidth = Dimensions.get('window').width;
 
 const Add2FA = () => {
   const navigation = useNavigation();
 
   const dispatch = useDispatch();
 
-  const seeds = useSelector(makeSelectGeneratedPhrases);
+  const selectedAccountPublicKey = useSelector(
+    makeSelectSelectedAccountPublicKey,
+  );
   const is2FaAdded = useSelector(makeSelectIs2FaAdded);
 
   const [isVerifying, setVerifying] = useState(false);
@@ -44,11 +46,21 @@ const Add2FA = () => {
   const generateQrCode = useCallback(async () => {
     setIsLoading(true);
     try {
-      const {data} = await api.post('/api/2fa/generate', {
-        secretRecovery: seeds,
-      });
-      setQrCodeUrl(data.url);
-      setSecretCode(data.secret);
+      if (selectedAccountPublicKey) {
+        const data = await generate2FA(selectedAccountPublicKey);
+        setQrCodeUrl(data.url);
+        setSecretCode(data.secret);
+      } else {
+        Toast.show({
+          type: 'error',
+          position: 'top',
+          visibilityTime: 4000,
+          autoHide: true,
+          text1: 'Something Went Wrong',
+          text2: 'Please try again',
+          topOffset: statusBarHeight + 16,
+        });
+      }
     } catch (e) {
       Toast.show({
         type: 'error',
@@ -62,7 +74,7 @@ const Add2FA = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [seeds]);
+  }, [selectedAccountPublicKey]);
 
   useEffect(() => {
     generateQrCode();
@@ -98,38 +110,42 @@ const Add2FA = () => {
   const verifyCode = useCallback(async () => {
     setVerifying(true);
     try {
-      const {data} = await api.post('/api/2fa/verify', {
-        secret: code,
-        secretRecovery: seeds,
-      });
-
-      setVerifying(false);
-      switch (data.status) {
-        case 'success':
-          handleVerifySuccessRes();
-          return;
-        case 'code is incorrect':
-          handleVerifyErrorRes();
-          return;
+      if (selectedAccountPublicKey) {
+        const status = await verify2FA(selectedAccountPublicKey, code);
+        setVerifying(false);
+        switch (status) {
+          case 'success':
+            handleVerifySuccessRes();
+            return;
+          case 'code is incorrect':
+            handleVerifyErrorRes();
+            return;
+        }
+      } else {
+        setVerifying(false);
       }
     } catch (e) {
       setVerifying(false);
     }
-  }, [seeds, code, handleVerifyErrorRes, handleVerifySuccessRes]);
+  }, [
+    selectedAccountPublicKey,
+    code,
+    handleVerifyErrorRes,
+    handleVerifySuccessRes,
+  ]);
 
   const handlePressBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
 
   const deactivate = useCallback(async () => {
-    const {data} = await api.post('api/2fa/deactivate', {
-      secretRecovery: seeds,
-    });
-
-    if (data.status === 'success') {
-      dispatch(setIs2FaAdded(false));
+    if (selectedAccountPublicKey) {
+      const status = await deactivate2FA(selectedAccountPublicKey);
+      if (status === 'success') {
+        dispatch(setIs2FaAdded(false));
+      }
     }
-  }, [seeds]);
+  }, [selectedAccountPublicKey]);
 
   return (
     <View style={styles.container}>
@@ -164,12 +180,9 @@ const Add2FA = () => {
               enter the verification code
             </Text>
             {qrCodeUrl ? (
-              <Image
-                source={{
-                  uri: qrCodeUrl,
-                }}
-                style={styles.qrCode}
-              />
+              <View style={styles.qrCode}>
+                <QRCode size={windowWidth - 40} value={qrCodeUrl} />
+              </View>
             ) : null}
             <View style={styles.block}>
               {secretCode.length ? (

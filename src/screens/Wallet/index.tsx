@@ -21,6 +21,7 @@ import {
   makeSelectAccounts,
   makeSelectBalanceLoading,
   makeSelectSelectedAccount,
+  makeSelectSelectedAccountPublicKey,
   makeSelectWalletInitialized,
 } from '../../store/userWallet/selectors';
 import {styles} from './styles';
@@ -33,9 +34,8 @@ import {
 import {useDebounce} from '../../utils/hooksHelpers';
 import {useShallowEqualSelector} from '../../store/utils';
 import Confirm2FaModal from '../../modals/Confirm2FaModal';
-import api from '../../api';
-import {makeSelectGeneratedPhrases} from '../../store/auth/selectors';
 import {setIs2FaAdded} from '../../store/auth';
+import {check2FA} from '../../api/2fa';
 
 const Wallet = () => {
   const dispatch = useDispatch();
@@ -52,7 +52,9 @@ const Wallet = () => {
   );
   const selectedAccount = useShallowEqualSelector(makeSelectSelectedAccount);
 
-  const seeds = useShallowEqualSelector(makeSelectGeneratedPhrases);
+  const selectedAccountPublicKey = useSelector(
+    makeSelectSelectedAccountPublicKey,
+  );
   const [isConfirm2FaModalVisible, setConfirm2FaModalVisible] = useState(false);
   const verify2FAAsked = useRef<boolean>(false);
 
@@ -118,22 +120,18 @@ const Wallet = () => {
   }, [walletInitialized, accountsList, selectedAccount?.accountName]);
 
   useEffect(() => {
-    if (seeds && !verify2FAAsked.current) {
+    if (selectedAccountPublicKey && !verify2FAAsked.current) {
       verify2FAAsked.current = true;
-      api
-        .post('/api/2fa/check', {
-          secretRecovery: seeds || '',
-        })
-        .then(response2FA => {
-          if (response2FA?.data?.is2FaAdded) {
-            dispatch(setIs2FaAdded(true));
-            setConfirm2FaModalVisible(true);
-          } else {
-            dispatch(setIs2FaAdded(false));
-          }
-        });
+      check2FA(selectedAccountPublicKey).then(response2FA => {
+        if (response2FA) {
+          dispatch(setIs2FaAdded(true));
+          setConfirm2FaModalVisible(true);
+        } else {
+          dispatch(setIs2FaAdded(false));
+        }
+      });
     }
-  }, [seeds]);
+  }, [selectedAccountPublicKey]);
 
   return (
     <>
@@ -156,7 +154,6 @@ const Wallet = () => {
         </ScrollView>
       </View>
       <Confirm2FaModal
-        seeds={seeds}
         isVisible={isConfirm2FaModalVisible}
         setVisible={setConfirm2FaModalVisible}
       />

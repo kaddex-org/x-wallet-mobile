@@ -8,12 +8,11 @@ import FooterButton from '../../components/FooterButton';
 import Input from '../../components/Input';
 import {styles} from './styles';
 import {getRestoreAccount} from '../../store/userWallet/actions';
-import api from '../../api';
 import {recoverAccountSchema} from '../../validation/recoverAccountSchema';
-import queryString from 'query-string';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {useNavigation} from '@react-navigation/native';
 import {ERootStackRoutes, TNavigationProp} from '../../routes/types';
+import {validateSeeds} from '../../api/kadena/validateSeeds';
 
 const RecoverAccount = () => {
   const navigation =
@@ -32,14 +31,11 @@ const RecoverAccount = () => {
 
   const handlePressSave = useCallback(
     (data: FieldValues) => {
-      api
-        .get(
-          `/api/validate-seeds?${queryString.stringify({
-            seeds: data.seeds || '',
-          })}`,
-        )
-        .then(response => {
-          if (response.data) {
+      validateSeeds({
+        seeds: data.seeds || '',
+      })
+        .then(responseData => {
+          if (responseData) {
             dispatch(
               getRestoreAccount({
                 seeds: data.seeds || '',

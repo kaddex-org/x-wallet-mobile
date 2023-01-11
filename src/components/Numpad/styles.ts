@@ -17,9 +17,6 @@ export const styles = StyleSheet.create({
     height: 12,
     marginHorizontal: 5,
   },
-  smallCircleWhite: {
-    backgroundColor: 'white',
-  },
   numpadWrapper: {
     marginTop: 40,
     flexDirection: 'row',

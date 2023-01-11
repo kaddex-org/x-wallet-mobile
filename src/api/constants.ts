@@ -29,3 +29,7 @@ export const jsonHeader = {
 export const contentHeader = {
   'Content-Type': 'application/json',
 };
+
+export const defaultChainIds = Array.from({length: 20}, (_, i) => `${i}`);
+
+export const nonTransferableTokens = ['kaddex.skdx'];

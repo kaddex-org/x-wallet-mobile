@@ -37,13 +37,6 @@ export const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   token: {
-    opacity: 1,
-    marginVertical: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tokenOpacityHalf: {
-    opacity: 0.5,
     marginVertical: 6,
     flexDirection: 'row',
     alignItems: 'center',

@@ -116,6 +116,10 @@ const VerifyRecoveryPhrase = () => {
           Please confirm your recovery phrase by typing the words in the correct
           order.
         </Text>
+        <Text style={styles.warning}>
+          It is recommended not to use custom keyboards. Please use default
+          keyboard.
+        </Text>
         <View style={styles.inputsWrapper}>
           {list.map(item => (
             <Controller

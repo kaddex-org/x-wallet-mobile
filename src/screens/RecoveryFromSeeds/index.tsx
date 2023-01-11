@@ -1,5 +1,4 @@
 import {useNavigation} from '@react-navigation/native';
-import queryString from 'query-string';
 import React, {useCallback, useRef} from 'react';
 import {Controller, FieldValues, useForm} from 'react-hook-form';
 import {
@@ -14,7 +13,6 @@ import {
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import {useDispatch} from 'react-redux';
-import api from '../../api';
 import ArrowLeftSvg from '../../assets/images/arrow-left.svg';
 
 import Logo from '../../assets/images/logo.svg';
@@ -27,6 +25,8 @@ import {useScrollBottomOnKeyboard} from '../../utils/keyboardHelpers';
 import {recoverySchema} from '../../validation/recoverySchema';
 
 import {styles} from './styles';
+import {validateSeeds} from '../../api/kadena/validateSeeds';
+import {hashPassword} from '../../api/kadena/hashPassword';
 
 const bgImage = require('../../assets/images/bgimage.png');
 
@@ -51,23 +51,15 @@ const RecoveryFromSeeds = () => {
 
   const handlePressRecover = useCallback(
     ({seeds, password}: FieldValues) => {
-      api
-        .get(
-          `/api/validate-seeds?${queryString.stringify({
-            seeds: seeds || '',
-          })}`,
-        )
-        .then(async response => {
-          if (response.data) {
-            api
-              .get(
-                `/api/hash-password?${queryString.stringify({
-                  password: password || '',
-                })}`,
-              )
-              .then(async hashResponse => {
-                if (hashResponse.data.hash) {
-                  dispatch(setPassword(hashResponse.data.hash));
+      validateSeeds({
+        seeds: seeds || '',
+      })
+        .then(async isValidated => {
+          if (isValidated) {
+            hashPassword({password: password || ''})
+              .then(async hashResponseHash => {
+                if (hashResponseHash) {
+                  dispatch(setPassword(hashResponseHash));
                   dispatch(setPhrases(seeds.split(' ')));
                   dispatch(
                     getRestoreAccount({

@@ -7,8 +7,6 @@ import Item from './components/Item';
 import {styles} from './styles';
 import {makeSelectSearchTokenList} from '../../store/userWallet/selectors';
 import {ERootStackRoutes, TNavigationProp} from '../../routes/types';
-import api from '../../api';
-import queryString from 'query-string';
 import {getNetworkParams} from '../../utils/networkHelpers';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {makeSelectActiveNetworkDetails} from '../../store/networks/selectors';
@@ -16,6 +14,7 @@ import {useShallowEqualSelector} from '../../store/utils';
 import {useNavigation} from '@react-navigation/native';
 import {setSelectedToken} from '../../store/userWallet';
 import {useDispatch} from 'react-redux';
+import {getPact} from '../../api/kadena/pact';
 
 const SearchTokens = () => {
   const navigation =
@@ -36,22 +35,19 @@ const SearchTokens = () => {
     (item: string) => async () => {
       if (networkDetail) {
         setLoadingItem(item);
-        api
-          .get(
-            `/api/pact?${queryString.stringify({
-              ...networkDetail,
-              ...getNetworkParams(networkDetail),
-              chainId: '2',
-              pactCode: `(let ((moduleDesc (describe-module "${item}")))
+        getPact({
+          ...networkDetail,
+          ...getNetworkParams(networkDetail),
+          chainId: '2',
+          pactCode: `(let ((moduleDesc (describe-module "${item}")))
                             (contains "fungible-v2"
                               (if (contains 'interfaces moduleDesc)
                                 (at 'interfaces moduleDesc)
                                 []
                                 )))`,
-            })}`,
-          )
-          .then(response => {
-            if (response.data === true) {
+        })
+          .then(responseData => {
+            if (responseData === true) {
               dispatch(setSelectedToken(null));
               navigation.replace(ERootStackRoutes.AddToken, {
                 tokenName: item,
@@ -83,7 +79,7 @@ const SearchTokens = () => {
   );
 
   const renderItem = useCallback(
-    ({item}: any) => (
+    ({item, index}: any) => (
       <Item
         key={item}
         item={item}

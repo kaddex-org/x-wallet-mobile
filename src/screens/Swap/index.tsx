@@ -6,18 +6,21 @@ import {styles} from './styles';
 import GasSettingSvg from '../../assets/images/gas_station.svg';
 import BasicSettingSvg from '../../assets/images/basic-settins.svg';
 import GasSettingModal from './components/GasSettingModal';
+import {usePactContext} from '../../contexts';
 
 const Swap = () => {
   const [isGasSettingModalVisible, setGasSettingModalVisible] = useState(false);
   const [isSettingModal, setSettingModal] = useState(false);
 
   const toggleGasSettingModal = useCallback(() => {
-    setGasSettingModalVisible(prev => !prev);
+    setGasSettingModalVisible(!isGasSettingModalVisible);
   }, [isGasSettingModalVisible]);
 
   const toggleSettingModal = useCallback(() => {
-    setSettingModal(prev => !prev);
+    setSettingModal(!isSettingModal);
   }, [isSettingModal]);
+
+  const pact = usePactContext();
 
   return (
     <TouchableOpacity
@@ -37,7 +40,11 @@ const Swap = () => {
         onPress={toggleGasSettingModal}
         activeOpacity={0.8}
         style={styles.gasButton}>
-        <GasSettingSvg width={24} height={24} />
+        <GasSettingSvg
+          fill={pact?.enableGasStation ? '#41cc41' : '#787B8E'}
+          width={24}
+          height={24}
+        />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={toggleSettingModal}

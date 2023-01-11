@@ -32,6 +32,11 @@ export const makeSelectGeneratedPhrases = createSelector(
   },
 );
 
+export const makeSelectGeneratedPhrasesLoading = createSelector(
+  selectedState,
+  state => state.generatedPhrasesState.fetching,
+);
+
 export const makeSelectIs2FaAdded = createSelector(
   selectedState,
   state => state.is2FaAdded,

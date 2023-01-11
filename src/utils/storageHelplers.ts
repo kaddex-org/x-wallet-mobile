@@ -1,7 +1,26 @@
 import {useCallback, useEffect, useState} from 'react';
 import {MMKV} from 'react-native-mmkv';
+import {ENCRYPTION_KEY} from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const valueStorage = new MMKV({id: 'app-value-storage'});
+const plainStorage = new MMKV();
+const userStorage = new MMKV({
+  id: 'user-storage',
+  encryptionKey: ENCRYPTION_KEY,
+});
+const authStorage = new MMKV({
+  id: 'auth-storage',
+  encryptionKey: ENCRYPTION_KEY,
+});
+
+export const removeAllPersistData = async () => {
+  valueStorage.clearAll();
+  plainStorage.clearAll();
+  userStorage.clearAll();
+  authStorage.clearAll();
+  await AsyncStorage.clear();
+};
 
 export function useAsyncStorage(key: string, initialValue?: any) {
   const [storedValue, setStoredValue] = useState<any>(initialValue || null);

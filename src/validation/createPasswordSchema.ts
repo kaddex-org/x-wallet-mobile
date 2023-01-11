@@ -7,8 +7,11 @@ export const createPasswordSchema = yupResolver(
     .object({
       password: yup
         .string()
-        .min(8, 'password must contain at least 8 chars')
-        .required(REQUIRED_MESSAGE),
+        .required(REQUIRED_MESSAGE)
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
+          'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One Special Case Character',
+        ),
       confirmPassword: yup
         .string()
         .required(REQUIRED_MESSAGE)

@@ -37,7 +37,7 @@ import Wallet from '../screens/Wallet';
 import WalletConnectSettings from '../screens/WalletConnectSettings';
 import Welcome from '../screens/Welcome';
 import ChangeAccountPassword from '../screens/ChangeAccountPassword';
-import ReceiverScan from "../screens/ReceiverScan";
+import ReceiverScan from '../screens/ReceiverScan';
 
 export const AUTH_STACK_SCREENS = [
   {name: ERootStackRoutes.Welcome, component: Welcome},

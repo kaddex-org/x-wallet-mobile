@@ -52,15 +52,11 @@ export const styles = StyleSheet.create({
     marginTop: 20,
   },
   qrCode: {
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: 'rgba(65, 31, 84, 0.15)',
-    marginTop: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     alignSelf: 'center',
     width: '100%',
-    maxWidth: 360,
-    maxHeight: 360,
-    aspectRatio: 1,
+    marginTop: 24,
   },
   inputWrapper: {
     marginBottom: 20,

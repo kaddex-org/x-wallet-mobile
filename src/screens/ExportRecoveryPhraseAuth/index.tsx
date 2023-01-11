@@ -21,9 +21,8 @@ import {bottomSpace} from '../../utils/deviceHelpers';
 import {useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
 import {makeSelectHashPassword} from '../../store/auth/selectors';
-import api from '../../api';
-import queryString from 'query-string';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import {comparePassword} from '../../api/kadena/comparePassword';
 
 const ExportRecoveryPhraseAuth = () => {
   const navigation =
@@ -41,15 +40,12 @@ const ExportRecoveryPhraseAuth = () => {
 
   const handlePressContinue = useCallback(
     (data: FieldValues) => {
-      api
-        .get(
-          `/api/compare-password?${queryString.stringify({
-            password: data.password || '',
-            hash,
-          })}`,
-        )
+      comparePassword({
+        password: data.password || '',
+        hash: hash || '',
+      })
         .then(compareResponse => {
-          if (compareResponse.data) {
+          if (compareResponse) {
             navigation.replace(
               ERootStackRoutes.ExportRecoveryPhrase,
               {} as any,
